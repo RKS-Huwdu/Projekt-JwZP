@@ -42,4 +42,4 @@ tylko swoich).\
 ■ Należy przygotować demo serwisu, z użyciem np Postmana (i innych
 narzędzi), które zademonstrują działanie i monitorowanie systemu.\
 ■ Wszelkie dodatkowe elementy ustalone z prowadzącym są również
-obowiązkowe.**\
+obowiązkowe.**
