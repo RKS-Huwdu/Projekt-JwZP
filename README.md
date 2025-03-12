@@ -1,7 +1,86 @@
 # Projekt-JwZP
 
-**Wymagania projektowe:
+Pamietacz Miejscowy\
+Opis\
+Pamietacz Miejscowy to aplikacja, która pomaga użytkownikom zapamiętywać ciekawe miejsca i obiekty napotkane w codziennym życiu. Dzięki niej\ użytkownik może łatwo dodawać lokalizacje, przypisywać im kategorie i notatki oraz otrzymywać przypomnienia, gdy znajdzie się w pobliżu zapisanych\ miejsc. Aplikacja pozwala również na udostępnianie miejsc znajomym.\
+Główne funkcje\
+Zapisywanie lokalizacji – użytkownik może dodać miejsce do swojej listy na podstawie współrzędnych GPS.\
+Kategorie i notatki – możliwość oznaczania miejsc różnymi kategoriami (np. „kawiarnia”, „sklep”, „jezioro”) i dodawania notatek.\
+Udostępnianie miejsc – użytkownik może łatwo podzielić się zapisanym miejscem ze znajomymi.\
+Dostęp do statystyk – użytkownik premium może przeglądać statystyki odwiedzanych miejsc.\
+Typy użytkowników i ich uprawnienia\
+Aplikacja obsługuje różne poziomy dostępu dla użytkowników:\
+
+Zwykły użytkownik\
+Może dodawać i edytować swoje miejsca.\
+Przegląda historię zapisanych lokalizacji.\
+Udostępnia miejsca innym użytkownikom.\
+Ograniczony dostęp do statystyk (np. liczba zapisanych miejsc).\
+
+Użytkownik premium\
+Wszystkie funkcje zwykłego użytkownika.\
+Dostęp do zaawansowanych statystyk odwiedzanych miejsc.\
+Możliwość tworzenia prywatnych list miejsc widocznych tylko dla wybranych osób.\
+
+Administrator\
+Ma pełną kontrolę nad aplikacją.\
+Zarządza użytkownikami i ich uprawnieniami.\
+Ma dostęp do wszystkich miejsc i ich historii.\
+
+Zewnętrzne API wykorzystywane w aplikacji.\
+Pamietacz Miejscowy integruje się z następującymi API, aby wzbogacić funkcjonalność aplikacji:\
+-Google Maps API\
+-OpenWeatherMap API\
+
+Dlaczego warto?\
+Idealne dla osób, które często zapominają nazwy czy lokalizacje miejsc.\
+Pomaga eksplorować miasto i odkrywać ukryte perełki.\
+Ułatwia powrót do miejsc, które kiedyś się spodobały.\
+Integracja z zewnętrznymi API sprawia, że aplikacja dostarcza dodatkowe informacje, które mogą być przydatne użytkownikowi.\
+Użytkownicy premium zyskują dodatkowe funkcje, które ułatwiają organizację zapisanych lokalizacji.\
+
+
+**Wymagania projektowe:\
 ■ Domenę i zakres funkcjonalny należy ustalić z prowadzącym\
+
+Autoryzacja i zarządzanie użytkownikami\
+POST /api/auth/register – rejestracja nowego użytkownika\
+GET /api/users/me – pobranie danych aktualnie zalogowanego użytkownika\
+PUT /api/users/me – aktualizacja danych użytkownika\
+DELETE /api/users/me – usunięcie konta\
+
+
+Zarządzanie miejscami\
+POST /api/places – dodanie nowego miejsca\
+GET /api/places – pobranie wszystkich miejsc użytkownika\
+GET /api/places/nearest - pobranie najbliższego miejsca użytkownika\
+GET /api/places/{id} – pobranie szczegółów konkretnego miejsca\
+PUT /api/places/{id} – edycja miejsca\
+DELETE /api/places/{id} – usunięcie miejsca\
+
+
+Kategorie miejsc\
+GET /api/categories – pobranie dostępnych kategorii\
+POST /api/categories – dodanie nowej kategorii (tylko admin)\
+DELETE /api/categories/{id} – usunięcie kategorii (tylko admin)\
+
+
+Udostępnianie miejsc\
+POST /api/places/{id}/share – udostępnienie miejsca innemu użytkownikowi\
+GET /api/places/shared – pobranie miejsc udostępnionych użytkownikowi\
+
+
+Premium użytkownicy\
+PUT /api/premium/upgrade/{id} (tylko admin)\
+DELETE /api/premium/cancel/{id} (tylko admin)\
+GET /api/premium/status – sprawdzenie statusu premium\
+
+
+Monitorowanie systemu i logi\
+GET /api/health – sprawdzenie stanu systemu\
+GET /api/logs – pobranie logów (tylko admin)\
+
+
 ■ Kod źródłowy aplikacji należy utrzymywać na Githubie lub Gitlabie\
 ■ Kod powinien być automatycznie budowany (gradle lub maven), a wynik
 budowania (pass/fail) powinien być widoczny w repozytorium.\
