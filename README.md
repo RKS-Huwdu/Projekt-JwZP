@@ -9,7 +9,7 @@ Kategorie i notatki – możliwość oznaczania miejsc różnymi kategoriami (np
 Udostępnianie miejsc – użytkownik może łatwo podzielić się zapisanym miejscem ze znajomymi.\
 Dostęp do statystyk – użytkownik premium może przeglądać statystyki odwiedzanych miejsc.\
 Typy użytkowników i ich uprawnienia\
-Aplikacja obsługuje różne poziomy dostępu dla użytkowników:\
+Aplikacja obsługuje różne poziomy dostępu dla użytkowników:
 
 Zwykły użytkownik\
 Może dodawać i edytować swoje miejsca.\
@@ -28,7 +28,7 @@ Zarządza użytkownikami i ich uprawnieniami.\
 Ma dostęp do wszystkich miejsc i ich historii.\
 
 Zewnętrzne API wykorzystywane w aplikacji.\
-Pamietacz Miejscowy integruje się z następującymi API, aby wzbogacić funkcjonalność aplikacji:\
+Pamietacz Miejscowy integruje się z następującymi API, aby wzbogacić funkcjonalność aplikacji:
 -Google Maps API\
 -OpenWeatherMap API\
 
