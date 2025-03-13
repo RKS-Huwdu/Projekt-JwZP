@@ -1,19 +1,27 @@
 package com.example.app.entities;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "users")
-public record User(
-        @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-        Long id,
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class User {
+
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
 
         @Column(nullable = false, unique = true)
-        String username,
+        private String username;
 
         @Column(nullable = false, unique = true)
-        String email,
+        private String email;
 
         @Column(nullable = false)
-        String password
-) {}
+        private String password;
+}
