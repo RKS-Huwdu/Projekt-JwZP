@@ -3,10 +3,10 @@ name: Java CI with Gradle
 on:
   push:
     branches:
-      - "Karol"
+      - "main"
   pull_request:
     branches:
-      - "Karol"
+      - "main"
 
 jobs:
   build:
