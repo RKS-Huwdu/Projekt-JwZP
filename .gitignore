@@ -1,0 +1,15 @@
+# IntelliJ IDEA
+.idea/
+
+# Gradle
+.gradle/
+build/
+
+# Java
+*.class
+*.log
+*.swp
+
+# Gradle Wrapper
+gradle-wrapper.jar
+gradle-wrapper.properties
