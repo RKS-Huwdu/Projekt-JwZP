@@ -1,5 +1,6 @@
 package com.example.app.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -41,9 +42,7 @@ public class User {
                 inverseJoinColumns = @JoinColumn(name = "role_id"),
                 uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "role_id"})
         )
+        @JsonIgnore
         private Set<Role> roles = new HashSet<>();
-
-
-
 
 }

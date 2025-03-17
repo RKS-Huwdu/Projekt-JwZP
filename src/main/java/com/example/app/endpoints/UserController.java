@@ -1,5 +1,6 @@
 package com.example.app.endpoints;
 
+import com.example.app.DTOs.UserDTO;
 import com.example.app.entities.User;
 import com.example.app.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,7 +34,7 @@ public class UserController {
             }
     )
     @GetMapping
-    public List<User> getAllUsers() {
+    public List<UserDTO> getAllUsers() {
         return userService.findAll();
     }
 
@@ -48,7 +49,7 @@ public class UserController {
             }
     )
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
         return userService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
