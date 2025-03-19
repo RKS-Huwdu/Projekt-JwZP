@@ -22,7 +22,7 @@ public class GoogleMapsService{
         this.context = context;
     }
 
-    private LatLng getUserLocation() throws IOException, InterruptedException, ApiException {
+    public LatLng getUserLocation() throws IOException, InterruptedException, ApiException {
         return GeolocationApi.geolocate(context,new GeolocationPayload()).await().location;
     }
 
