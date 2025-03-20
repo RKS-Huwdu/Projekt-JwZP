@@ -5,12 +5,14 @@ import com.example.app.entities.RoleName;
 import com.example.app.repositories.RoleRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.Optional;
 
 @Component
+@Order(1)
 public class RoleInitializer implements CommandLineRunner {
 
     private final RoleRepository roleRepository;
