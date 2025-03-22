@@ -1,19 +1,16 @@
 package com.example.app.endpoints;
 
+import com.example.app.DTOs.PasswordDTO;
 import com.example.app.DTOs.UserDTO;
-import com.example.app.entities.User;
 import com.example.app.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/user")
 @Tag(name = "User", description = "User management")
 public class UserController {
 
@@ -21,21 +18,6 @@ public class UserController {
 
     public UserController(UserService userService) {
         this.userService = userService;
-    }
-
-    @Operation(
-            summary = "Get all users",
-            description = "Get all users from the database",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "OK"
-                    )
-            }
-    )
-    @GetMapping
-    public List<UserDTO> getAllUsers() {
-        return userService.findAll();
     }
 
     @Operation(
@@ -48,27 +30,18 @@ public class UserController {
                     )
             }
     )
-    @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
-        return userService.findById(id)
+    @GetMapping("/me")
+    public ResponseEntity<UserDTO> getUserById() {
+        return userService.getCurrentUserInfo()
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @Operation(
-            summary = "Create user",
-            description = "Create user in the database",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "201",
-                            description = "User created"
-                    )
-        }
-    )
-    @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        User savedUser = userService.registerUser(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
+    @PutMapping("/update")
+    public ResponseEntity<UserDTO> updateUser(@RequestBody UserDTO userDto) {
+        return userService.updateCurrentUser(userDto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @Operation(
@@ -81,10 +54,17 @@ public class UserController {
         )
     }
     )
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        return userService.deleteById(id) ?
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteUser() {
+        return userService.deleteCurrentUser() ?
                 ResponseEntity.noContent().build() :
                 ResponseEntity.notFound().build();
+    }
+
+    @PatchMapping("/password")
+    public ResponseEntity<String> updatePassword(@RequestBody PasswordDTO passwordDTO) {
+        return userService.updatePassword(passwordDTO) ?
+                ResponseEntity.ok("Hasło zostało zmienione") :
+                ResponseEntity.badRequest().build();
     }
 }

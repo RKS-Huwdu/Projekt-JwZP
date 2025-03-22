@@ -2,6 +2,7 @@ package com.example.app.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,7 +30,8 @@ public class User {
         @Column(nullable = false, unique = true)
         private String username;
 
-        @Column(nullable = false, unique = true)
+        @Column(unique = true)
+        @Email
         private String email;
 
         @Column(nullable = false)
