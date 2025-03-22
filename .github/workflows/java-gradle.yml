@@ -25,6 +25,9 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+    env:
+      GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 21
@@ -42,6 +45,8 @@ jobs:
 
       - name: Build JAR with Gradle
         run: ./gradlew clean build -x test
+        env:
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
 
       - name: Upload JAR as artifact
         uses: actions/upload-artifact@v4
