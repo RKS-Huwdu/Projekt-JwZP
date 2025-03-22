@@ -1,6 +1,5 @@
 package com.example.app.config;
 
-
 import com.google.maps.GeoApiContext;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
