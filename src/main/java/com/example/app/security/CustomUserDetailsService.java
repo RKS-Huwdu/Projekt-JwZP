@@ -6,11 +6,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public CustomUserDetailsService(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -21,9 +24,9 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-        System.out.println("Zalogowano użytkownika: " + user.getUsername());
-        System.out.println("Hasło użytkownika: " + user.getPassword());
-        System.out.println("Role: " + user.getRoles());
+        logger.info("Zalogowano użytkownika: {}", user.getUsername());
+        logger.info("Hasło użytkownika: {}", user.getPassword());
+        logger.info("Role: {}", user.getRoles());
         return new CustomUserDetails(user);
     }
 }
