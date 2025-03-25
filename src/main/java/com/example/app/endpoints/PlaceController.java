@@ -54,11 +54,17 @@ public class PlaceController {
     @GetMapping("/nearest")
     public ResponseEntity<Place> getNearestPlace(@AuthenticationPrincipal User user) {
         try {
-            Place nearestPlace = placeService.getNearestPlace(user);
-            return nearestPlace == null ? ResponseEntity.status(HttpStatus.NOT_FOUND).build() : ResponseEntity.ok(nearestPlace);
+            Optional<Place> nearestPlace = placeService.getNearestPlace(user);
+            return nearestPlace.isEmpty() ? ResponseEntity.status(HttpStatus.NOT_FOUND).build() : ResponseEntity.ok(nearestPlace.get());
         }catch(IOException | InterruptedException | ApiException e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+    @PutMapping("/{id}")
+    public ResponseEntity<Place> updatePlace(@AuthenticationPrincipal User user,@PathVariable Long id,@RequestBody Place place) {
+        Optional<Place> placeOptional = placeService.update(user,id,place);
+        return placeOptional.isEmpty() ? ResponseEntity.status(HttpStatus.NOT_FOUND).build() : ResponseEntity.ok(placeOptional.get());
+    }
+
 
 }

@@ -36,6 +36,7 @@ public class PlaceService{
         Optional<Place> placeOptional = placeRepository.findByName(place.getName());
         if(placeOptional.isPresent()){
             placeOptional.get().getUsers().add(user);
+            placeRepository.save(placeOptional.get());
             return placeOptional.get();
         }
         
@@ -50,17 +51,38 @@ public class PlaceService{
         }
         if(placeOptional.get().getUsers().size()==1)
             placeRepository.deleteById(id);
-        else
+        else {
             placeOptional.get().getUsers().remove(user);
+            placeRepository.save(placeOptional.get());
+        }
         return true;
     }
 
-    public Place getNearestPlace(User user) throws IOException, InterruptedException, ApiException {
+    public Optional<Place> update(User user,Long id,Place place){
+        Optional<Place> placeOptional = placeRepository.findById(id);
+
+        if(placeOptional.isEmpty() || !placeOptional.get().getUsers().contains(user))
+            return Optional.empty();
+
+        Place toUpdate = placeOptional.get();
+        toUpdate.setName(place.getName());
+        toUpdate.setLatitude(place.getLatitude());
+        toUpdate.setLongitude(place.getLongitude());
+        toUpdate.setCategory(place.getCategory());
+
+        return Optional.of(placeRepository.save(toUpdate));
+    }
+
+    public Optional<Place> getNearestPlace(User user) throws IOException, InterruptedException, ApiException {
         LatLng userLocation = googleMapsService.getUserLocation();
         double userLat = userLocation.lat;
         double userLng = userLocation.lng;
 
         List<Place> places = findAll(user);
+
+        if(places.isEmpty())
+            return Optional.empty();
+
         double minDistance = Double.MAX_VALUE;
         Place nearestPlace = null;
 
@@ -71,7 +93,7 @@ public class PlaceService{
                 nearestPlace = place;
             }
         }
-        return nearestPlace;
+        return Optional.of(nearestPlace);
     }
 
     private double getDistance(double userLat, double userLng, double placeLat, double placeLng){
