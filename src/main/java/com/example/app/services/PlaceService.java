@@ -1,8 +1,10 @@
 package com.example.app.services;
 
 import com.example.app.entities.Place;
+import com.example.app.entities.User;
 import com.example.app.repositories.PlaceRepository;
 import com.google.maps.errors.ApiException;
+import com.google.maps.model.LatLng;
 import com.google.maps.model.PlacesSearchResponse;
 import com.google.maps.model.PlacesSearchResult;
 import org.springframework.stereotype.Service;
@@ -22,36 +24,59 @@ public class PlaceService{
         this.googleMapsService = googleMapsService;
     }
 
-    public List<Place> findAll(){
-        return placeRepository.findAll();
+    public List<Place> findAll(User user){
+        return placeRepository.findAllByUserId(user.getId());
     }
 
-    public Optional<Place> findById(Long id){
-        return placeRepository.findById(id);
+    public Optional<Place> findById(User user,Long id){
+        return placeRepository.findByUserIdAndPlaceId(user.getId(),id);
     }
 
-    public Place save(Place place){
+    public Place save(User user,Place place){
+        Optional<Place> placeOptional = placeRepository.findByName(place.getName());
+        if(placeOptional.isPresent()){
+            placeOptional.get().getUsers().add(user);
+            return placeOptional.get();
+        }
+        
         return placeRepository.save(place);
     }
 
-    public boolean deleteById(Long id){
-        if(placeRepository.findById(id).isEmpty())
+
+    public boolean deleteById(User user,Long id){
+        Optional<Place> placeOptional = placeRepository.findById(id);
+        if(placeOptional.isEmpty() || !placeOptional.get().getUsers().contains(user)){
             return false;
-        placeRepository.deleteById(id);
+        }
+        if(placeOptional.get().getUsers().size()==1)
+            placeRepository.deleteById(id);
+        else
+            placeOptional.get().getUsers().remove(user);
         return true;
     }
 
-    public Place getNearestPlace() throws IOException, InterruptedException, ApiException {
-        List<Place> places = placeRepository.findAll();
+    public Place getNearestPlace(User user) throws IOException, InterruptedException, ApiException {
+        LatLng userLocation = googleMapsService.getUserLocation();
+        double userLat = userLocation.lat;
+        double userLng = userLocation.lng;
 
-        PlacesSearchResponse foundNearBy = googleMapsService.getNearestPlaces();
+        List<Place> places = findAll(user);
+        double minDistance = Double.MAX_VALUE;
+        Place nearestPlace = null;
 
-        for(PlacesSearchResult result : foundNearBy.results){
-            Optional<Place> nearestPlace = places.stream().filter(place -> place.getName().equalsIgnoreCase(result.name)).findFirst();
-            if(nearestPlace.isPresent())
-                return nearestPlace.get();
+        for(Place place : places){
+            double distance = getDistance(userLat,userLng,place.getLatitude(),place.getLongitude());
+            if(distance < minDistance){
+                minDistance = distance;
+                nearestPlace = place;
+            }
         }
-        return null;
+        return nearestPlace;
+    }
+
+    private double getDistance(double userLat, double userLng, double placeLat, double placeLng){
+        //Haversine formula
+        return Math.abs(Math.asin(Math.sqrt(1 - Math.cos(placeLat - userLat) + Math.cos(userLat) * Math.cos(placeLat) * (1 - Math.cos(placeLng - userLng)))));
     }
 
 
