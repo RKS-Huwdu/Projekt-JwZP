@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/categories")
+@RequestMapping("/categories")
 public class CategoryController {
     private final CategoryService categoryService;
 
@@ -28,7 +28,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Category> deletePlace(@PathVariable Long id) {
+    public ResponseEntity<Category> deleteCategory(@PathVariable Long id) {
         if(categoryService.deleteById(id))
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
