@@ -48,17 +48,12 @@ jobs:
         env:
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
 
-      - name: Authenticate with Snyk
-        run: snyk auth ${{ secrets.SNYK_TOKEN }}
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-      - name: Run Snyk scan
-        run: snyk test --all-sub-projects --severity-threshold=medium
-
-      - name: Monitor project in Snyk dashboard
-        run: snyk monitor
-
-      - name: Upload JAR as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app
-          path: build/libs/*.jar
