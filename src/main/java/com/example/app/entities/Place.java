@@ -3,6 +3,9 @@ package com.example.app.entities;
 import lombok.*;
 import jakarta.persistence.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Table(name = "places")
 @Getter
@@ -23,5 +26,12 @@ public class Place{
     private double latitude;
 
     private double longitude;
+
+    @ManyToMany
+    @JoinTable(name = "place_user",
+            joinColumns = @JoinColumn(name = "place_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> users = new HashSet<>();
 
 }
