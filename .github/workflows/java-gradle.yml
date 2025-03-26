@@ -59,9 +59,7 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-
-      - name: Fix JAVA_HOME for Gradle & Snyk
-        run: echo "JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))" >> $GITHUB_ENV
+          set-java-home: true
 
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/gradle@master
