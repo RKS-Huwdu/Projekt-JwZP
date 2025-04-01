@@ -1,6 +1,6 @@
 package com.example.app.endpoints;
 
-import com.example.app.DTOs.UserDTO;
+import com.example.app.dtos.UserDTO;
 import com.example.app.services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
