@@ -7,9 +7,8 @@ import com.example.app.entities.RoleName;
 import com.example.app.entities.User;
 import com.example.app.repositories.RoleRepository;
 import com.example.app.repositories.UserRepository;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -41,8 +40,9 @@ public class UserService {
         return userRepository.findById(id).map(UserDTO::fromEntity);
     }
 
-    public Optional<UserDTO> getCurrentUserInfo() {
-        return getCurrentUser().map(UserDTO::fromEntity);
+    public Optional<UserDTO> getCurrentUserInfo(String username) {
+        return userRepository.findByUsername(username)
+                .map(UserDTO::fromEntity);
     }
 
     public UserDTO registerUser(User user) {
@@ -64,22 +64,18 @@ public class UserService {
         }).orElse(false);
     }
 
-    public boolean deleteCurrentUser() {
-        return getCurrentUser()
+    public boolean deleteCurrentUser(String username) {
+        return userRepository.findByUsername(username)
                 .map(user -> {
                     userRepository.delete(user);
                     return true;
                 }).orElse(false);
     }
 
-    public Optional<UserDTO> updateCurrentUser(UserDTO userDto) {
-        Optional<User> userOptional = getCurrentUser();
+    public Optional<UserDTO> updateCurrentUser(UserDTO userDto, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-        if (userOptional.isEmpty()) {
-            return Optional.empty();
-        }
-
-        User user = userOptional.get();
         if (userDto.username() != null) user.setUsername(userDto.username());
         if (userDto.email() != null) user.setEmail(userDto.email());
 
@@ -87,23 +83,11 @@ public class UserService {
         return Optional.of(UserDTO.fromEntity(user));
     }
 
-    public boolean updatePassword(PasswordDTO passwordDTO) {
-        Optional<User> userOptional = getCurrentUser();
-
-        if (userOptional.isEmpty()) {
-            return false;
-        }
-
-        User user = userOptional.get();
+    public void updatePassword(PasswordDTO passwordDTO, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
         user.setPassword(passwordEncoder.encode(passwordDTO.password()));
         userRepository.save(user);
-        return true;
-    }
-
-    private Optional<User> getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        return userRepository.findByUsername(username);
     }
 }
