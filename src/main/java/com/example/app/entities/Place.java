@@ -1,6 +1,6 @@
 package com.example.app.entities;
 
-import com.example.app.DTOs.PlaceDTO;
+import com.example.app.dtos.PlaceDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import jakarta.persistence.*;

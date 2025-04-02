@@ -1,10 +1,7 @@
-package com.example.app.DTOs;
+package com.example.app.dtos;
 
 import com.example.app.entities.Place;
 import com.example.app.entities.User;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Set;
 import java.util.stream.Collectors;

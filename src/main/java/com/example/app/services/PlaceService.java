@@ -1,6 +1,6 @@
 package com.example.app.services;
 
-import com.example.app.DTOs.PlaceDTO;
+import com.example.app.dtos.PlaceDTO;
 import com.example.app.entities.Category;
 import com.example.app.entities.Place;
 import com.example.app.entities.User;
@@ -11,7 +11,6 @@ import com.google.maps.errors.ApiException;
 import com.google.maps.model.LatLng;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 

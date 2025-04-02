@@ -1,7 +1,7 @@
 package com.example.app.services;
 
-import com.example.app.DTOs.PasswordDTO;
-import com.example.app.DTOs.UserDTO;
+import com.example.app.dtos.PasswordDTO;
+import com.example.app.dtos.UserDTO;
 import com.example.app.entities.Role;
 import com.example.app.entities.RoleName;
 import com.example.app.entities.User;

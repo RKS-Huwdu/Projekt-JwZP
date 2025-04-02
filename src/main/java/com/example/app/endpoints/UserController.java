@@ -1,7 +1,7 @@
 package com.example.app.endpoints;
 
-import com.example.app.DTOs.PasswordDTO;
-import com.example.app.DTOs.UserDTO;
+import com.example.app.dtos.PasswordDTO;
+import com.example.app.dtos.UserDTO;
 import com.example.app.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

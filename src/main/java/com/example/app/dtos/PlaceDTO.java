@@ -1,4 +1,4 @@
-package com.example.app.DTOs;
+package com.example.app.dtos;
 
 import com.example.app.entities.Place;
 import com.example.app.entities.User;

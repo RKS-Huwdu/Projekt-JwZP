@@ -1,4 +1,4 @@
-package com.example.app.DTOs;
+package com.example.app.dtos;
 
 public record PasswordDTO(String password){
 }
