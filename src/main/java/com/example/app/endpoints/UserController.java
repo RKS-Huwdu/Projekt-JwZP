@@ -2,11 +2,13 @@ package com.example.app.endpoints;
 
 import com.example.app.dtos.PasswordDTO;
 import com.example.app.dtos.UserDTO;
+import com.example.app.security.CustomUserDetails;
 import com.example.app.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -31,15 +33,16 @@ public class UserController {
             }
     )
     @GetMapping("/me")
-    public ResponseEntity<UserDTO> getUserById() {
-        return userService.getCurrentUserInfo()
+    public ResponseEntity<UserDTO> getUser(@AuthenticationPrincipal CustomUserDetails user) {
+        return userService.getCurrentUserInfo(user.getUsername())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/update")
-    public ResponseEntity<UserDTO> updateUser(@RequestBody UserDTO userDto) {
-        return userService.updateCurrentUser(userDto)
+    public ResponseEntity<UserDTO> updateUser(@RequestBody UserDTO userDto,
+                                              @AuthenticationPrincipal CustomUserDetails user) {
+        return userService.updateCurrentUser(userDto, user.getUsername())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -55,16 +58,15 @@ public class UserController {
     }
     )
     @DeleteMapping("/me")
-    public ResponseEntity<Void> deleteUser() {
-        return userService.deleteCurrentUser() ?
+    public ResponseEntity<Void> deleteUser(@AuthenticationPrincipal CustomUserDetails user) {
+        return userService.deleteCurrentUser(user.getUsername()) ?
                 ResponseEntity.noContent().build() :
                 ResponseEntity.notFound().build();
     }
 
     @PatchMapping("/password")
-    public ResponseEntity<String> updatePassword(@RequestBody PasswordDTO passwordDTO) {
-        return userService.updatePassword(passwordDTO) ?
-                ResponseEntity.ok("Hasło zostało zmienione") :
-                ResponseEntity.badRequest().build();
+    public ResponseEntity<String> updatePassword(@RequestBody PasswordDTO passwordDTO,
+                                                 @AuthenticationPrincipal CustomUserDetails user) {
+        return ResponseEntity.ok("Hasło zostało zmienione");
     }
 }

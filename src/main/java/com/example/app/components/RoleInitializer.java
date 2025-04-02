@@ -7,6 +7,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -16,6 +18,7 @@ import java.util.Optional;
 public class RoleInitializer implements CommandLineRunner {
 
     private final RoleRepository roleRepository;
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public RoleInitializer(RoleRepository roleRepository) {
         this.roleRepository = roleRepository;
@@ -29,7 +32,7 @@ public class RoleInitializer implements CommandLineRunner {
             if (existingRole.isEmpty()) {
                 Role role = new Role(roleName);
                 roleRepository.save(role);
-                System.out.println("Dodano rolę: " + roleName);
+                logger.info("Dodano rolę: {}", roleName);
             }
         });
     }
