@@ -1,5 +1,8 @@
 # Projekt-JwZP
 
+LINK DO POSTMANA:
+https://app.getpostman.com/join-team?invite_code=ccb6cb3d9083ef754b9c082548dc1d88667562a708be0acd0253aea181cfecd0&target_code=6ca8d12d30df8facce64445338bffe8c
+
 Pamietacz Miejscowy\
 Opis\
 Pamietacz Miejscowy to aplikacja, która pomaga użytkownikom zapamiętywać ciekawe miejsca i obiekty napotkane w codziennym życiu. Dzięki niej użytkownik może łatwo dodawać lokalizacje, przypisywać im kategorie i notatki oraz otrzymywać przypomnienia, gdy znajdzie się w pobliżu zapisanych miejsc. Aplikacja pozwala również na udostępnianie miejsc znajomym.\
@@ -43,42 +46,53 @@ Użytkownicy premium zyskują dodatkowe funkcje, które ułatwiają organizację
 **Wymagania projektowe:\
 ■ Domenę i zakres funkcjonalny należy ustalić z prowadzącym
 
+Publiczne endpointy:
+POST /public/register – rejestracja nowego użytkownika\
+GET /public/info - podstawowe informacje o aplikacji
+
 Autoryzacja i zarządzanie użytkownikami\
-POST /api/auth/register – rejestracja nowego użytkownika\
-GET /api/users/me – pobranie danych aktualnie zalogowanego użytkownika\
-PUT /api/users/me – aktualizacja danych użytkownika\
-DELETE /api/users/me – usunięcie konta
+GET /user/me – pobranie danych aktualnie zalogowanego użytkownika\
+GET /user/friends – pobranie listy znajomych\
+GET /user/user - informacje podstawowe o wszystkich uzytkownikach\
+GET /user/user/{username} - informacje podstawowe o uzytkowniku na podstawie username\
+PUT /user/me – aktualizacja zalogowanego danych użytkownika\
+PATCH /user/password/ - aktualizacja hasła zalogowanego użytkownika\
+POST /user/{username}/invite-friend - wyslij zaproszenie dla uzytkownika do znajomych\
+DELETE /user/{username}/invite-friend - usun zaproszenie\
+GET /user/invitations - sprawdz swoje zaproszenia do znjomych\
+POST /user/invitations/{username}/accept - zaakceptuj zaproszenie do znajomych\
+DELETE /user/me – usunięcie konta\
+GET /user/{id} -(tylko admin) informacje podstawowe o uzytkowniku na podstawie id\
+PATCH /user/role/{id} (tylko admin)\
+DELETE /user/role/{id} (tylko admin) - usuniecie \
+GET /user/account/status – sprawdzenie statusu premium
 
 
 Zarządzanie miejscami\
-POST /api/places – dodanie nowego miejsca\
-GET /api/places – pobranie wszystkich miejsc użytkownika\
-GET /api/places/nearest - pobranie najbliższego miejsca użytkownika\
-GET /api/places/{id} – pobranie szczegółów konkretnego miejsca\
-PUT /api/places/{id} – edycja miejsca\
-DELETE /api/places/{id} – usunięcie miejsca
+POST /places/public – dodanie nowego miejsca publicznego (znajomi moga zobaczyc)\
+POST /places/private – dodanie nowego miejsca prywatnego\
+GET /places/friend/{username}
+GET /places – pobranie wszystkich miejsc użytkownika\
+GET /places/private - pobranie wszystkich prywatny miejsc użytkownika\
+GET /places/nearest - pobranie najbliższego miejsca użytkownika\
+GET /places/{id} – pobranie szczegółów konkretnego miejsca\
+PUT /places/{id} – edycja miejsca\
+DELETE /places/{id} – usunięcie miejsca
 
 
 Kategorie miejsc\
-GET /api/categories – pobranie dostępnych kategorii\
-POST /api/categories – dodanie nowej kategorii (tylko admin)\
-DELETE /api/categories/{id} – usunięcie kategorii (tylko admin)
+GET /categories – pobranie dostępnych kategorii\
+POST /categories – dodanie nowej kategorii (tylko admin)\
+DELETE /categories/{id} – usunięcie kategorii (tylko admin)
 
 
 Udostępnianie miejsc\
-POST /api/places/{id}/share – udostępnienie miejsca innemu użytkownikowi\
-GET /api/places/shared – pobranie miejsc udostępnionych użytkownikowi
-
-
-Premium użytkownicy\
-PUT /api/premium/upgrade/{id} (tylko admin)\
-DELETE /api/premium/cancel/{id} (tylko admin)\
-GET /api/premium/status – sprawdzenie statusu premium
-
+POST /places/{id}/share – udostępnienie miejsca innemu użytkownikowi\
+GET /places/shared – pobranie miejsc udostępnionych użytkownikowi
 
 Monitorowanie systemu i logi\
-GET /api/health – sprawdzenie stanu systemu\
-GET /api/logs – pobranie logów (tylko admin)
+GET /health – sprawdzenie stanu systemu\
+GET /logs – pobranie logów (tylko admin)
 
 
 ■ Kod źródłowy aplikacji należy utrzymywać na Githubie lub Gitlabie\
