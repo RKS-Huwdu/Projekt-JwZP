@@ -101,7 +101,7 @@ public class UserService {
         return true;
     }
 
-    private Optional<User> getCurrentUser() {
+    public Optional<User> getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         return userRepository.findByUsername(username);

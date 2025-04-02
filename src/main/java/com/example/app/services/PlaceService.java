@@ -1,76 +1,108 @@
 package com.example.app.services;
 
+import com.example.app.DTOs.PlaceDTO;
+import com.example.app.entities.Category;
 import com.example.app.entities.Place;
 import com.example.app.entities.User;
+import com.example.app.repositories.CategoryRepository;
 import com.example.app.repositories.PlaceRepository;
+import com.example.app.repositories.UserRepository;
 import com.google.maps.errors.ApiException;
 import com.google.maps.model.LatLng;
-import com.google.maps.model.PlacesSearchResponse;
-import com.google.maps.model.PlacesSearchResult;
+import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class PlaceService{
     private final PlaceRepository placeRepository;
+    private final CategoryRepository categoryRepository;
 
+    private final UserRepository userRepository;
     private final GoogleMapsService googleMapsService;
 
-    public PlaceService(PlaceRepository placeRepository,GoogleMapsService googleMapsService) {
+
+    public PlaceService(PlaceRepository placeRepository,CategoryRepository categoryRepository,UserRepository userRepository,GoogleMapsService googleMapsService) {
         this.placeRepository = placeRepository;
+        this.categoryRepository = categoryRepository;
+        this.userRepository = userRepository;
         this.googleMapsService = googleMapsService;
     }
 
-    public List<Place> findAll(User user){
-        return placeRepository.findAllByUserId(user.getId());
+    public List<PlaceDTO> findAll(User user){
+        return placeRepository.findAllByUserId(user.getId()).stream()
+                .map(PlaceDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
-    public Optional<Place> findById(User user,Long id){
-        return placeRepository.findByUserIdAndPlaceId(user.getId(),id);
+    public Optional<PlaceDTO> findById(User user,Long id){
+        return placeRepository.findByUserIdAndPlaceId(user.getId(),id).map(PlaceDTO::fromEntity);
     }
 
-    public Place save(User user,Place place){
-        Optional<Place> placeOptional = placeRepository.findByName(place.getName());
-        if(placeOptional.isPresent()){
-            placeOptional.get().getUsers().add(user);
-            placeRepository.save(placeOptional.get());
-            return placeOptional.get();
+    @Transactional
+    public Optional<PlaceDTO> save(User user,PlaceDTO placeDTO){
+        Optional<Place> placeOptional = placeRepository.findByName(placeDTO.name());
+        Place place;
+        if(placeOptional.isPresent())
+           place = placeOptional.get();
+        else {
+            Optional<Category> category = categoryRepository.findByName(placeDTO.category());
+            if (category.isEmpty())
+                return Optional.empty();
+
+            place = new Place(placeDTO, category.get());
         }
-        
-        return placeRepository.save(place);
+
+        place.getUsers().add(user);
+        user.getPlaces().add(place);
+        userRepository.saveAndFlush(user);
+        return Optional.of(PlaceDTO.fromEntity(placeRepository.saveAndFlush(place)));
     }
 
-
+    @Transactional
     public boolean deleteById(User user,Long id){
-        Optional<Place> placeOptional = placeRepository.findById(id);
-        if(placeOptional.isEmpty() || !placeOptional.get().getUsers().contains(user)){
+        Optional<Place> placeOptional = placeRepository.findByUserIdAndPlaceId(user.getId(),id);
+        if(placeOptional.isEmpty()){
             return false;
         }
-        if(placeOptional.get().getUsers().size()==1)
-            placeRepository.deleteById(id);
-        else {
-            placeOptional.get().getUsers().remove(user);
-            placeRepository.save(placeOptional.get());
-        }
+
+        Place place = placeOptional.get();
+
+        place.getUsers().remove(user);
+        if (place.getUsers().isEmpty())
+            placeRepository.delete(place);
+        else
+            placeRepository.saveAndFlush(place);
         return true;
     }
 
-    public Optional<Place> update(User user,Long id,Place place){
-        Optional<Place> placeOptional = placeRepository.findById(id);
+    @Transactional
+    public Optional<PlaceDTO> update(User user,Long placeId,PlaceDTO placeDTO){
+        Optional<Place> placeOptional = placeRepository.findByUserIdAndPlaceId(user.getId(),placeId);
 
-        if(placeOptional.isEmpty() || !placeOptional.get().getUsers().contains(user))
+        if(placeOptional.isEmpty())
             return Optional.empty();
 
-        Place toUpdate = placeOptional.get();
-        toUpdate.setName(place.getName());
-        toUpdate.setLatitude(place.getLatitude());
-        toUpdate.setLongitude(place.getLongitude());
-        toUpdate.setCategory(place.getCategory());
+        Place place = placeOptional.get();
+        place.setName(placeDTO.name());
+        place.setLatitude(placeDTO.latitude());
+        place.setLongitude(placeDTO.longitude());
 
-        return Optional.of(placeRepository.save(toUpdate));
+        Optional<Category> category = categoryRepository.findByName(placeDTO.category());
+        if(placeDTO.category() != null && category.isPresent())
+            place.setCategory(category.get());
+        else
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Category not found");
+
+        placeRepository.saveAndFlush(place);
+        return placeOptional.map(PlaceDTO::fromEntity);
     }
 
     public Optional<Place> getNearestPlace(User user) throws IOException, InterruptedException, ApiException {
@@ -78,7 +110,7 @@ public class PlaceService{
         double userLat = userLocation.lat;
         double userLng = userLocation.lng;
 
-        List<Place> places = findAll(user);
+        List<Place> places = placeRepository.findAllByUserId(user.getId());
 
         if(places.isEmpty())
             return Optional.empty();
@@ -97,7 +129,6 @@ public class PlaceService{
     }
 
     private double getDistance(double userLat, double userLng, double placeLat, double placeLng){
-        //Haversine formula
         return Math.abs(Math.asin(Math.sqrt(1 - Math.cos(placeLat - userLat) + Math.cos(userLat) * Math.cos(placeLat) * (1 - Math.cos(placeLng - userLng)))));
     }
 

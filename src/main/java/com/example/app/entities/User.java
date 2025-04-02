@@ -1,6 +1,7 @@
 package com.example.app.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
@@ -47,7 +48,8 @@ public class User {
         @JsonIgnore
         private Set<Role> roles = new HashSet<>();
 
-        @ManyToMany(mappedBy = "users")
+        @ManyToMany(mappedBy = "users", fetch = FetchType.EAGER)
+        @JsonIgnore
         private Set<Place> places = new HashSet<>();
 
 }

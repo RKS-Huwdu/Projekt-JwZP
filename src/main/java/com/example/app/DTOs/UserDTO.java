@@ -1,5 +1,6 @@
 package com.example.app.DTOs;
 
+import com.example.app.entities.Place;
 import com.example.app.entities.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,7 +14,8 @@ public record UserDTO(
         Long id,
         String username,
         String email,
-        Set<String> roles)
+        Set<String> roles,
+        Set<String> places)
 {
     public static UserDTO fromEntity(User user) {
         return new UserDTO(
@@ -22,6 +24,9 @@ public record UserDTO(
                 user.getEmail(),
                 user.getRoles().stream()
                         .map(role -> role.getName().name())
+                        .collect(Collectors.toSet()),
+                user.getPlaces().stream()
+                        .map(Place::getName)
                         .collect(Collectors.toSet())
         );
     }

@@ -1,5 +1,7 @@
 package com.example.app.entities;
 
+import com.example.app.DTOs.PlaceDTO;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import jakarta.persistence.*;
 
@@ -27,11 +29,18 @@ public class Place{
 
     private double longitude;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(name = "place_user",
             joinColumns = @JoinColumn(name = "place_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
+    @JsonIgnore
     private Set<User> users = new HashSet<>();
 
+    public Place(PlaceDTO placeDTO, Category category) {
+        name = placeDTO.name();
+        latitude = placeDTO.latitude();
+        longitude = placeDTO.longitude();
+        this.category = category;
+    }
 }
