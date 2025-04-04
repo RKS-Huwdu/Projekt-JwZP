@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
-    @EntityGraph(attributePaths = {"roles"})
+    @EntityGraph(attributePaths = {"roles","places"})
     Optional<User> findById(@Param("id") Long id);
 
-    @EntityGraph(attributePaths = {"roles"})
+    @EntityGraph(attributePaths = {"roles","places"})
     List<User> findAll();
 
-    @EntityGraph(attributePaths = {"roles"})
+    @EntityGraph(attributePaths = {"roles","places"})
     Optional<User> findByUsername(String username);
 }

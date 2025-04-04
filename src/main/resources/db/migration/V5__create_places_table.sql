@@ -1,4 +1,4 @@
-CREATE TABLE place (
+CREATE TABLE places (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE,
     category_id BIGINT NOT NULL,
