@@ -62,7 +62,8 @@ DELETE /user/{username}/invite-friend - usun zaproszenie\
 GET /user/invitations - sprawdz swoje zaproszenia do znjomych\
 POST /user/invitations/{username}/accept - zaakceptuj zaproszenie do znajomych\
 DELETE /user/me – usunięcie konta\
-GET /user/{id} -(tylko admin) informacje podstawowe o uzytkowniku na podstawie id\
+GET /user/{id} -(tylko admin) informacje podstawowe o uzytkowniku na podstawie id\ 
+DELETE /user/{id} -(tylko admin) usuwanie uzytkownika na podstawie id\
 PATCH /user/role/{id} (tylko admin)\
 DELETE /user/role/{id} (tylko admin) - usuniecie \
 GET /user/account/status – sprawdzenie statusu premium

@@ -35,6 +35,7 @@ public class UserController {
                     )
             }
     )
+
     @GetMapping("/me")
     public ResponseEntity<UserDTO> getUser(@AuthenticationPrincipal CustomUserDetails user) {
         return userService.getCurrentUserInfo(user.getUsername())
@@ -42,6 +43,16 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @Operation(
+            summary = "Get user by ID",
+            description = "Get user from the database by ID",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "OK"
+                    )
+            }
+    )
     @PutMapping("/update")
     public ResponseEntity<UserDTO> updateUser(@RequestBody UserDTO userDto,
                                               @AuthenticationPrincipal CustomUserDetails user) {
@@ -66,14 +77,32 @@ public class UserController {
                 ResponseEntity.noContent().build() :
                 ResponseEntity.notFound().build();
     }
-
+    @Operation(
+            summary = "Get user by ID",
+            description = "Get user from the database by ID",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "OK"
+                    )
+            }
+    )
     @PatchMapping("/password")
     public ResponseEntity<String> updatePassword(@RequestBody PasswordDTO passwordDTO,
                                                  @AuthenticationPrincipal CustomUserDetails user) {
         return ResponseEntity.ok("Hasło zostało zmienione");
     }
 
-
+    @Operation(
+            summary = "Get user by ID",
+            description = "Get user from the database by ID",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "OK"
+                    )
+            }
+    )
     //admin endpoints
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
@@ -81,6 +110,17 @@ public class UserController {
         return userService.findById(id).map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @Operation(
+            summary = "Get user by ID",
+            description = "Get user from the database by ID",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "OK"
+                    )
+            }
+    )
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUserById(@PathVariable Long id) {
