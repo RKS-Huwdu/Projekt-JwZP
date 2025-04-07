@@ -52,4 +52,13 @@ public class User {
         @JsonIgnore
         private Set<Place> places = new HashSet<>();
 
+        @OneToMany(mappedBy = "requester", cascade = CascadeType.ALL)
+        @JsonIgnore
+        private Set<Friends> sentInvites = new HashSet<>();
+
+        @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
+        @JsonIgnore
+        private Set<Friends> receivedInvites = new HashSet<>();
+
+
 }

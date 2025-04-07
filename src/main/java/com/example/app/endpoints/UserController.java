@@ -26,16 +26,13 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Get user by ID",
-            description = "Get user from the database by ID",
+            summary = "Get current user",
+            description = "Retrieve the currently authenticated user's information",
             responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "OK"
-                    )
+                    @ApiResponse(responseCode = "200", description = "User data retrieved"),
+                    @ApiResponse(responseCode = "404", description = "User not found")
             }
     )
-
     @GetMapping("/me")
     public ResponseEntity<UserDTO> getUser(@AuthenticationPrincipal CustomUserDetails user) {
         return userService.getCurrentUserInfo(user.getUsername())
@@ -44,13 +41,11 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Get user by ID",
-            description = "Get user from the database by ID",
+            summary = "Update current user",
+            description = "Update details of the currently authenticated user",
             responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "OK"
-                    )
+                    @ApiResponse(responseCode = "200", description = "User updated successfully"),
+                    @ApiResponse(responseCode = "404", description = "User not found")
             }
     )
     @PutMapping("/update")
@@ -62,14 +57,12 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Delete user",
-            description = "Delete user from the database by ID",
-    responses = {
-        @ApiResponse(
-                responseCode = "200",
-                description = "OK"
-        )
-    }
+            summary = "Delete current user",
+            description = "Delete the currently authenticated user from the system",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "User deleted successfully"),
+                    @ApiResponse(responseCode = "404", description = "User not found")
+            }
     )
     @DeleteMapping("/me")
     public ResponseEntity<Void> deleteUser(@AuthenticationPrincipal CustomUserDetails user) {
@@ -78,13 +71,11 @@ public class UserController {
                 ResponseEntity.notFound().build();
     }
     @Operation(
-            summary = "Get user by ID",
-            description = "Get user from the database by ID",
+            summary = "Change password",
+            description = "Update the password of the currently authenticated user",
             responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "OK"
-                    )
+                    @ApiResponse(responseCode = "200", description = "Password changed successfully"),
+                    @ApiResponse(responseCode = "400", description = "Invalid password data")
             }
     )
     @PatchMapping("/password")
@@ -94,13 +85,11 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Get user by ID",
-            description = "Get user from the database by ID",
+            summary = "Get user by ID (admin only)",
+            description = "Retrieve a user's information by ID (accessible only by admin)",
             responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "OK"
-                    )
+                    @ApiResponse(responseCode = "200", description = "User data retrieved"),
+                    @ApiResponse(responseCode = "404", description = "User not found")
             }
     )
     //admin endpoints
@@ -112,13 +101,11 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Get user by ID",
-            description = "Get user from the database by ID",
+            summary = "Delete user by ID (admin only)",
+            description = "Delete a user from the system using their ID (accessible only by admin)",
             responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "OK"
-                    )
+                    @ApiResponse(responseCode = "204", description = "User deleted successfully"),
+                    @ApiResponse(responseCode = "404", description = "User not found")
             }
     )
     @PreAuthorize("hasRole('ADMIN')")

@@ -60,6 +60,7 @@ PATCH /user/password/ - aktualizacja hasła zalogowanego użytkownika\
 POST /user/{username}/invite-friend - wyslij zaproszenie dla uzytkownika do znajomych\
 DELETE /user/{username}/invite-friend - usun zaproszenie\
 GET /user/invitations - sprawdz swoje zaproszenia do znjomych\
+DELETE /user/{username}/delete-friend - usun znajomego\
 POST /user/invitations/{username}/accept - zaakceptuj zaproszenie do znajomych\
 DELETE /user/me – usunięcie konta\
 GET /user/{id} -(tylko admin) informacje podstawowe o uzytkowniku na podstawie id\ 
