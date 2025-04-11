@@ -4,8 +4,13 @@ import com.example.app.dtos.FriendsDTO;
 import com.example.app.entities.Friends;
 import com.example.app.entities.FriendshipStatus;
 import com.example.app.entities.User;
+import com.example.app.exception.CannotInviteYourselfException;
+import com.example.app.exception.FriendshipNotFoundException;
+import com.example.app.exception.InvitationAlreadyExistsException;
+import com.example.app.exception.InvitationNotFoundException;
 import com.example.app.repositories.FriendsRepository;
 import com.example.app.repositories.UserRepository;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -42,13 +47,13 @@ public class FriendService {
         User requester = getUser(requesterUsername);
         User receiver = getUser(receiverUsername);
 
-        if (requester.equals(receiver)) {
-            throw new IllegalArgumentException("Cannot send invite to yourself.");
+        if (requester.getUsername().equals(receiver.getUsername())) {
+            throw new CannotInviteYourselfException("Cannot send invite to yourself.");
         }
 
         friendRepository.findByRequesterAndReceiver(requester, receiver)
                 .ifPresent(f -> {
-                    throw new IllegalStateException("Invitation already exists.");
+                    throw new InvitationAlreadyExistsException("Invitation already exists.");
                 });
 
         Friends friends = new Friends();
@@ -69,7 +74,7 @@ public class FriendService {
         User receiver = getUser(receiverUsername);
         User requester = getUser(requesterUsername);
         Friends friends = friendRepository.findByRequesterAndReceiver(requester, receiver)
-                .orElseThrow(() -> new RuntimeException("Invitation not found"));
+                .orElseThrow(() -> new InvitationNotFoundException("Invitation not found"));
         friends.setStatus(FriendshipStatus.ACCEPTED);
         return mapToDTO(friendRepository.save(friends));
     }
@@ -87,7 +92,9 @@ public class FriendService {
         }
 
         // Jeśli nadal nie znaleziono, rzucamy wyjątek
-        Friends friend = friendOpt.orElseThrow(() -> new RuntimeException("Friendship not found"));
+        Friends friend = friendOpt.orElseThrow(() ->
+                new FriendshipNotFoundException("Friendship not found between " + requesterUsername + " and " + receiverUsername));
+
 
         // Usuwamy przyjaźń
         friendRepository.delete(friend);
@@ -107,7 +114,7 @@ public class FriendService {
 
     private User getUser(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("User '" + username + "' not found"));
     }
 
 
