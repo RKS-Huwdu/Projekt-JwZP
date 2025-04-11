@@ -6,6 +6,8 @@ import com.example.app.entities.User;
 import com.example.app.repositories.UserRepository;
 import com.example.app.services.PlaceService;
 import com.google.maps.errors.ApiException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +30,14 @@ public class PlaceController {
             this.userRepository = userRepository;
     }
 
+    @Operation(
+            summary = "Get all places",
+            description = "Retrieve a list of all places for the authenticated user",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Places list retrieved"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+            }
+    )
     @GetMapping
     public ResponseEntity<List<PlaceDTO>> getAllPlaces(){
         Optional<User> user = getCurrentUser();
@@ -37,6 +47,15 @@ public class PlaceController {
         return ResponseEntity.ok(placeService.findAll(user.get()));
     }
 
+    @Operation(
+            summary = "Get place by ID",
+            description = "Retrieve a place's information by its ID",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Place retrieved successfully"),
+                    @ApiResponse(responseCode = "404", description = "Place not found"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+            }
+    )
     @GetMapping("/{id}")
     public ResponseEntity<PlaceDTO> getPlaceById(@PathVariable Long id){
         Optional<User> user = getCurrentUser();
@@ -52,6 +71,15 @@ public class PlaceController {
     }
 
 
+    @Operation(
+            summary = "Save a new place",
+            description = "Save a new place for the authenticated user",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Place created successfully"),
+                    @ApiResponse(responseCode = "400", description = "Invalid data provided"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+            }
+    )
     @PostMapping
     @Transactional
     public ResponseEntity<PlaceDTO> savePlace(@RequestBody PlaceDTO placeDTO) {
@@ -66,7 +94,15 @@ public class PlaceController {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-
+    @Operation(
+            summary = "Delete a place",
+            description = "Delete a place by its ID",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "Place deleted successfully"),
+                    @ApiResponse(responseCode = "404", description = "Place not found"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+            }
+    )
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity<Void> deletePlace(@PathVariable Long id) {
@@ -80,7 +116,16 @@ public class PlaceController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
-
+    @Operation(
+            summary = "Get the nearest place",
+            description = "Retrieve the nearest place to the authenticated user's location",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Nearest place found"),
+                    @ApiResponse(responseCode = "404", description = "No places found"),
+                    @ApiResponse(responseCode = "500", description = "Internal server error"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+            }
+    )
     @GetMapping("/nearest")
     public ResponseEntity<PlaceDTO> getNearestPlace() {
         Optional<User> user = getCurrentUser();
@@ -95,6 +140,16 @@ public class PlaceController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @Operation(
+            summary = "Update a place",
+            description = "Update place details by its ID",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Place updated successfully"),
+                    @ApiResponse(responseCode = "404", description = "Place not found"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+            }
+    )
     @PutMapping("/{id}")
     @Transactional
     public ResponseEntity<PlaceDTO> updatePlace(@PathVariable Long id,@RequestBody PlaceDTO placeDTO) {

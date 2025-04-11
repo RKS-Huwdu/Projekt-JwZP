@@ -34,10 +34,8 @@ public class UserController {
             }
     )
     @GetMapping("/me")
-    public ResponseEntity<UserDTO> getUser(@AuthenticationPrincipal CustomUserDetails user) {
-        return userService.getCurrentUserInfo(user.getUsername())
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public UserDTO getUser(@AuthenticationPrincipal CustomUserDetails user) {
+        return userService.getCurrentUserInfo(user.getUsername());
     }
 
     @Operation(
@@ -49,11 +47,9 @@ public class UserController {
             }
     )
     @PutMapping("/update")
-    public ResponseEntity<UserDTO> updateUser(@RequestBody UserDTO userDto,
-                                              @AuthenticationPrincipal CustomUserDetails user) {
-        return userService.updateCurrentUser(userDto, user.getUsername())
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public UserDTO updateUser(@RequestBody UserDTO userDto,
+                              @AuthenticationPrincipal CustomUserDetails user) {
+        return userService.updateCurrentUser(userDto, user.getUsername());
     }
 
     @Operation(
@@ -65,11 +61,10 @@ public class UserController {
             }
     )
     @DeleteMapping("/me")
-    public ResponseEntity<Void> deleteUser(@AuthenticationPrincipal CustomUserDetails user) {
-        return userService.deleteCurrentUser(user.getUsername()) ?
-                ResponseEntity.noContent().build() :
-                ResponseEntity.notFound().build();
+    public void deleteUser(@AuthenticationPrincipal CustomUserDetails user) {
+        userService.deleteCurrentUser(user.getUsername());
     }
+
     @Operation(
             summary = "Change password",
             description = "Update the password of the currently authenticated user",
@@ -79,9 +74,10 @@ public class UserController {
             }
     )
     @PatchMapping("/password")
-    public ResponseEntity<String> updatePassword(@RequestBody PasswordDTO passwordDTO,
-                                                 @AuthenticationPrincipal CustomUserDetails user) {
-        return ResponseEntity.ok("Hasło zostało zmienione");
+    public String updatePassword(@RequestBody PasswordDTO passwordDTO,
+                                 @AuthenticationPrincipal CustomUserDetails user) {
+        userService.updatePassword(passwordDTO, user.getUsername());
+        return "Hasło zostało zmienione";
     }
 
     @Operation(
@@ -92,12 +88,10 @@ public class UserController {
                     @ApiResponse(responseCode = "404", description = "User not found")
             }
     )
-    //admin endpoints
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
-        return userService.findById(id).map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public UserDTO getUserById(@PathVariable Long id) {
+        return userService.findById(id);
     }
 
     @Operation(
@@ -110,10 +104,7 @@ public class UserController {
     )
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUserById(@PathVariable Long id) {
-        return userService.deleteById(id) ?
-                ResponseEntity.noContent().build() :
-                ResponseEntity.notFound().build();
+    public void deleteUserById(@PathVariable Long id) {
+        userService.deleteById(id);
     }
-
 }

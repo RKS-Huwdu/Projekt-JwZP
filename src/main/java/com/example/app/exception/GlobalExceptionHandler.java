@@ -39,4 +39,28 @@ public class GlobalExceptionHandler {
     public Map<String, String> handleInvitationNotFound(InvitationNotFoundException ex) {
         return Map.of("error", ex.getMessage());
     }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> handleUserNotFound(UserNotFoundException ex) {
+        return Map.of("error", ex.getMessage());
+    }
+
+    @ExceptionHandler(RoleNotFoundException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleRoleNotFound(RoleNotFoundException ex) {
+        return Map.of("error", "Konfiguracja ról: " + ex.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleGeneric(Exception ex) {
+        return Map.of("error", "Wystąpił błąd: " + ex.getMessage());
+    }
+
+    @ExceptionHandler(EmailAlreadyUsedException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, String> handleEmailAlreadyUsed(EmailAlreadyUsedException ex) {
+        return Map.of("error", ex.getMessage());
+    }
 }

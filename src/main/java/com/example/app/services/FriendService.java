@@ -83,20 +83,15 @@ public class FriendService {
         User requester = getUser(requesterUsername);
         User receiver = getUser(receiverUsername);
 
-        // Sprawdzamy przyjaźń w obu możliwych przypadkach (requester-receiver lub receiver-requester)
         Optional<Friends> friendOpt = friendRepository.findByRequesterAndReceiver(requester, receiver);
 
         if (!friendOpt.isPresent()) {
-            // Jeśli nie znaleziono, sprawdzamy w drugą stronę (odwrócona relacja)
             friendOpt = friendRepository.findByRequesterAndReceiver(receiver, requester);
         }
 
-        // Jeśli nadal nie znaleziono, rzucamy wyjątek
         Friends friend = friendOpt.orElseThrow(() ->
                 new FriendshipNotFoundException("Friendship not found between " + requesterUsername + " and " + receiverUsername));
 
-
-        // Usuwamy przyjaźń
         friendRepository.delete(friend);
     }
 
