@@ -1,6 +1,7 @@
 package com.example.app.services;
 
 import com.example.app.dtos.PasswordDTO;
+import com.example.app.dtos.UpdateUserDTO;
 import com.example.app.dtos.UserDTO;
 import com.example.app.entities.PremiumStatus;
 import com.example.app.entities.Role;
@@ -9,13 +10,11 @@ import com.example.app.entities.User;
 import com.example.app.exception.*;
 import com.example.app.repositories.RoleRepository;
 import com.example.app.repositories.UserRepository;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -52,14 +51,11 @@ public class UserService {
 
     public PremiumStatus getCurrentUserPremiumStatus(String username) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found: " + username));
-        Set<String> roles = user.getRoles().stream()
-                .map(role -> role.getName().name())
-                .collect(Collectors.toSet());
-        if(roles.contains("PREMIUM_USER")) {
-            return PremiumStatus.PREMIUM;
-        }else {
-            return PremiumStatus.NON_PREMIUM;
-        }
+
+        boolean isPremium = user.getRoles().stream()
+                .anyMatch(role -> role.getName() == RoleName.PREMIUM_USER);
+
+        return isPremium ? PremiumStatus.PREMIUM : PremiumStatus.NON_PREMIUM;
     }
 
     public UserDTO registerUser(User user) {
@@ -96,12 +92,12 @@ public class UserService {
         userRepository.delete(user);
     }
 
-    public UserDTO updateCurrentUser(UserDTO userDto, String username) {
+    public UserDTO updateCurrentUser(UpdateUserDTO updateUserDTO, String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
 
-        if (userDto.username() != null) user.setUsername(userDto.username());
-        if (userDto.email() != null) user.setEmail(userDto.email());
+        if (updateUserDTO.username() != null && !updateUserDTO.username().isBlank()) user.setUsername(updateUserDTO.username());
+        if (updateUserDTO.email() != null && !updateUserDTO.email().isBlank()) user.setEmail(updateUserDTO.email());
 
         user = userRepository.save(user);
         return UserDTO.fromEntity(user);

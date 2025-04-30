@@ -1,6 +1,7 @@
 package com.example.app.endpoints;
 
 import com.example.app.dtos.PasswordDTO;
+import com.example.app.dtos.UpdateUserDTO;
 import com.example.app.dtos.UserDTO;
 import com.example.app.entities.PremiumStatus;
 import com.example.app.entities.RoleName;
@@ -76,9 +77,9 @@ public class UserController {
             }
     )
     @PutMapping("/update")
-    public UserDTO updateUser(@RequestBody UserDTO userDto,
+    public UserDTO updateUser(@RequestBody UpdateUserDTO updateUserDto,
                               @AuthenticationPrincipal CustomUserDetails user) {
-        return userService.updateCurrentUser(userDto, user.getUsername());
+        return userService.updateCurrentUser(updateUserDto, user.getUsername());
     }
 
     @Operation(
