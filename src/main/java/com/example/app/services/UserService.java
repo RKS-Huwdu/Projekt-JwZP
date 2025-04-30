@@ -1,5 +1,6 @@
 package com.example.app.services;
 
+import com.example.app.dtos.CreateUserDTO;
 import com.example.app.dtos.PasswordDTO;
 import com.example.app.dtos.UpdateUserDTO;
 import com.example.app.dtos.UserDTO;
@@ -58,26 +59,15 @@ public class UserService {
         return isPremium ? PremiumStatus.PREMIUM : PremiumStatus.NON_PREMIUM;
     }
 
-    public UserDTO registerUser(User user) {
-        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            throw new UserAlreadyExistsException("Username already taken: " + user.getUsername());
-        }
-
-        if (userRepository.existsByEmail(user.getEmail())) {
-            throw new EmailAlreadyUsedException("Email jest już używany: " + user.getEmail());
-        }
+    public UserDTO registerUser(CreateUserDTO createUserDTO) {
+        validateUniqueness(createUserDTO);
 
         Role defaultRole = roleRepository.findByName(RoleName.FREE_USER)
                 .orElseThrow(() -> new RoleNotFoundException("Default role not found"));
 
-        Set<Role> roles = new HashSet<>();
-        roles.add(defaultRole);
-
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRoles(roles);
-
-        User newUser = userRepository.save(user);
-        return UserDTO.fromEntity(newUser);
+        User newUser = toEntity(createUserDTO, defaultRole);
+        User saved = userRepository.save(newUser);
+        return UserDTO.fromEntity(saved);
     }
 
     public void deleteById(Long id) {
@@ -129,5 +119,23 @@ public class UserService {
         user.getRoles().removeIf(r -> r.getName().equals(roleName));
 
         userRepository.save(user);
+    }
+
+    private User toEntity(CreateUserDTO dto, Role defaultRole) {
+        User user = new User();
+        user.setUsername(dto.username());
+        user.setEmail(dto.email());
+        user.setPassword(passwordEncoder.encode(dto.password()));
+        user.setRoles(Set.of(defaultRole));
+        return user;
+    }
+
+    private void validateUniqueness(CreateUserDTO dto) {
+        if (userRepository.findByUsername(dto.username()).isPresent()) {
+            throw new UserAlreadyExistsException("Username already taken: " + dto.username());
+        }
+        if (userRepository.existsByEmail(dto.email())) {
+            throw new EmailAlreadyUsedException("Email już istnieje: " + dto.email());
+        }
     }
 }

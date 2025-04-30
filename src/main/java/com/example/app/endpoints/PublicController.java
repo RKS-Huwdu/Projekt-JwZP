@@ -1,7 +1,7 @@
 package com.example.app.endpoints;
 
+import com.example.app.dtos.CreateUserDTO;
 import com.example.app.dtos.UserDTO;
-import com.example.app.entities.User;
 import com.example.app.services.InfoService;
 import com.example.app.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -48,7 +48,7 @@ public class PublicController {
             }
     )
     @PostMapping("/register")
-    public ResponseEntity<UserDTO> createUser(@RequestBody User user) {
+    public ResponseEntity<UserDTO> createUser(@RequestBody CreateUserDTO user) {
         UserDTO savedUser = userService.registerUser(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }
