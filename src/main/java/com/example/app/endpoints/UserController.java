@@ -2,6 +2,8 @@ package com.example.app.endpoints;
 
 import com.example.app.dtos.PasswordDTO;
 import com.example.app.dtos.UserDTO;
+import com.example.app.entities.PremiumStatus;
+import com.example.app.entities.RoleName;
 import com.example.app.security.CustomUserDetails;
 import com.example.app.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,6 +52,19 @@ public class UserController {
     @GetMapping("/users")
     public List<UserDTO> getAllUsers() {
         return userService.findAll();
+    }
+
+
+    @Operation(
+            summary = "Check premium status",
+            description = "Check premium status of the currently authenticated user",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK")
+            }
+    )
+    @GetMapping("/account/status")
+    public PremiumStatus checkPremiumStatus(@AuthenticationPrincipal CustomUserDetails user) {
+        return userService.getCurrentUserPremiumStatus(user.getUsername());
     }
 
     @Operation(
@@ -120,5 +135,33 @@ public class UserController {
     @DeleteMapping("/{id}")
     public void deleteUserById(@PathVariable Long id) {
         userService.deleteById(id);
+    }
+
+    @Operation(
+            summary = "Add user role by ID (admin only)",
+            description = "Add user role by ID",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Role added successfully"),
+                    @ApiResponse(responseCode = "404", description = "User not found")
+            }
+    )
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/role/{role}")
+    public void addRoleToUser(@PathVariable Long id, @PathVariable RoleName role) {
+        userService.addRoleToUser(id, role);
+    }
+
+    @Operation(
+            summary = "Delete user role by ID (admin only)",
+            description = "Delete user role by ID",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Role deleted successfully"),
+                    @ApiResponse(responseCode = "404", description = "User not found")
+            }
+    )
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}/role/{role}")
+    public void deleteRoleFromUser(@PathVariable Long id, @PathVariable RoleName role) {
+        userService.deleteRoleFromUser(id, role);
     }
 }

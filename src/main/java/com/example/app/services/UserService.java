@@ -2,6 +2,7 @@ package com.example.app.services;
 
 import com.example.app.dtos.PasswordDTO;
 import com.example.app.dtos.UserDTO;
+import com.example.app.entities.PremiumStatus;
 import com.example.app.entities.Role;
 import com.example.app.entities.RoleName;
 import com.example.app.entities.User;
@@ -49,6 +50,17 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
     }
 
+    public PremiumStatus getCurrentUserPremiumStatus(String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found: " + username));
+        Set<String> roles = user.getRoles().stream()
+                .map(role -> role.getName().name())
+                .collect(Collectors.toSet());
+        if(roles.contains("PREMIUM_USER")) {
+            return PremiumStatus.PREMIUM;
+        }else {
+            return PremiumStatus.NON_PREMIUM;
+        }
+    }
 
     public UserDTO registerUser(User user) {
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
@@ -104,6 +116,22 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
 
         user.setPassword(passwordEncoder.encode(passwordDTO.password()));
+        userRepository.save(user);
+    }
+
+    public void addRoleToUser(Long id, RoleName roleName) {
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found: " + id));
+        Role role = roleRepository.findByName(roleName).orElseThrow(() -> new RoleNotFoundException("Role not found: " + roleName));
+
+        user.getRoles().add(role);
+        userRepository.save(user);
+    }
+
+    public void deleteRoleFromUser(Long id, RoleName roleName) {
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found: " + id));
+
+        user.getRoles().removeIf(r -> r.getName().equals(roleName));
+
         userRepository.save(user);
     }
 }

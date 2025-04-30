@@ -52,12 +52,6 @@ public class GlobalExceptionHandler {
         return Map.of("error", "Konfiguracja ról: " + ex.getMessage());
     }
 
-    @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, String> handleGeneric(Exception ex) {
-        return Map.of("error", "Wystąpił błąd: " + ex.getMessage());
-    }
-
     @ExceptionHandler(EmailAlreadyUsedException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public Map<String, String> handleEmailAlreadyUsed(EmailAlreadyUsedException ex) {

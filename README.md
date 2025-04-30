@@ -65,8 +65,8 @@ POST /user/invitations/{username}/accept - zaakceptuj zaproszenie do znajomych\
 DELETE /user/me – usunięcie konta\
 GET /user/{id} -(tylko admin) informacje podstawowe o uzytkowniku na podstawie id \ 
 DELETE /user/{id} -(tylko admin) usuwanie uzytkownika na podstawie id\
-PATCH /user/role/{id} (tylko admin)\
-DELETE /user/role/{id} (tylko admin) - usuniecie \
+PATCH /user/{id}/role/{role} dodanie roli uzytkownikowi(tylko admin)\
+DELETE /user/{id}/role/{role} (tylko admin) - usuniecie roli uzytkownika \
 GET /user/account/status – sprawdzenie statusu premium
 
 

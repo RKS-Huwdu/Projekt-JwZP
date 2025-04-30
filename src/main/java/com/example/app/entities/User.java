@@ -59,6 +59,4 @@ public class User {
         @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
         @JsonIgnore
         private Set<Friends> receivedInvites = new HashSet<>();
-
-
 }
