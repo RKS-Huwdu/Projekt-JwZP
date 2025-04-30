@@ -89,8 +89,8 @@ public class UserService {
         if (updateUserDTO.username() != null && !updateUserDTO.username().isBlank()) user.setUsername(updateUserDTO.username());
         if (updateUserDTO.email() != null && !updateUserDTO.email().isBlank()) user.setEmail(updateUserDTO.email());
 
-        user = userRepository.save(user);
-        return UserDTO.fromEntity(user);
+        User updatedUser = userRepository.save(user);
+        return UserDTO.fromEntity(updatedUser);
     }
 
     public void updatePassword(PasswordDTO passwordDTO, String username) {

@@ -19,7 +19,7 @@ class AppApplicationTests {
 	private GeoApiContext geoApiContext;
 
 	@Test
-	public void contextLoads() {
+	void contextLoads() {
 		assertNotNull(geoApiContext);
 	}
 
