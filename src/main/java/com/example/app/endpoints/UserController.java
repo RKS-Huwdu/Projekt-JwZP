@@ -10,6 +10,7 @@ import com.example.app.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -77,7 +78,7 @@ public class UserController {
             }
     )
     @PutMapping("/update")
-    public UserDTO updateUser(@RequestBody UpdateUserDTO updateUserDto,
+    public UserDTO updateUser(@Valid @RequestBody UpdateUserDTO updateUserDto,
                               @AuthenticationPrincipal CustomUserDetails user) {
         return userService.updateCurrentUser(updateUserDto, user.getUsername());
     }
@@ -104,7 +105,7 @@ public class UserController {
             }
     )
     @PatchMapping("/password")
-    public String updatePassword(@RequestBody PasswordDTO passwordDTO,
+    public String updatePassword(@Valid @RequestBody PasswordDTO passwordDTO,
                                  @AuthenticationPrincipal CustomUserDetails user) {
         userService.updatePassword(passwordDTO, user.getUsername());
         return "Hasło zostało zmienione";

@@ -94,10 +94,6 @@ public class UserService {
     }
 
     public void updatePassword(PasswordDTO passwordDTO, String username) {
-        if (passwordDTO.password() == null || passwordDTO.password().isBlank()) {
-            throw new InvalidPasswordException("Password cannot be empty");
-        }
-
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
 

@@ -6,6 +6,7 @@ import com.example.app.services.InfoService;
 import com.example.app.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,7 +49,7 @@ public class PublicController {
             }
     )
     @PostMapping("/register")
-    public ResponseEntity<UserDTO> createUser(@RequestBody CreateUserDTO user) {
+    public ResponseEntity<UserDTO> createUser(@RequestBody @Valid CreateUserDTO user) {
         UserDTO savedUser = userService.registerUser(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }

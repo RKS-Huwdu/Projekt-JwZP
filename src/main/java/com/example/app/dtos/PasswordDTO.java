@@ -1,4 +1,6 @@
 package com.example.app.dtos;
 
-public record PasswordDTO(String password){
+import jakarta.validation.constraints.NotBlank;
+
+public record PasswordDTO(@NotBlank String password){
 }

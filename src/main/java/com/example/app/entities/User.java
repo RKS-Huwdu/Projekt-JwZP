@@ -31,7 +31,6 @@ public class User {
         private String username;
 
         @Column(unique = true)
-        @Email
         private String email;
 
         @Column(nullable = false)

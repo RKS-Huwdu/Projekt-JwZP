@@ -1,4 +1,10 @@
 package com.example.app.dtos;
 
-public record CreateUserDTO(String username, String email, String password) {
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
+public record CreateUserDTO(
+        @NotBlank String username,
+        @Email @NotBlank String email,
+        @NotBlank String password) {
 }
