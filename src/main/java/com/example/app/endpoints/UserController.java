@@ -7,12 +7,11 @@ import com.example.app.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import static org.springframework.security.authorization.AuthorityAuthorizationManager.hasRole;
+import java.util.List;
 
 @RestController
 @RequestMapping("/user")
@@ -39,6 +38,21 @@ public class UserController {
     }
 
     @Operation(
+            summary = "Get all users",
+            description = "Get all users from the database",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "OK"
+                    )
+            }
+    )
+    @GetMapping("/users")
+    public List<UserDTO> getAllUsers() {
+        return userService.findAll();
+    }
+
+    @Operation(
             summary = "Update current user",
             description = "Update details of the currently authenticated user",
             responses = {
@@ -56,7 +70,7 @@ public class UserController {
             summary = "Delete current user",
             description = "Delete the currently authenticated user from the system",
             responses = {
-                    @ApiResponse(responseCode = "204", description = "User deleted successfully"),
+                    @ApiResponse(responseCode = "200", description = "User deleted successfully"),
                     @ApiResponse(responseCode = "404", description = "User not found")
             }
     )
@@ -98,7 +112,7 @@ public class UserController {
             summary = "Delete user by ID (admin only)",
             description = "Delete a user from the system using their ID (accessible only by admin)",
             responses = {
-                    @ApiResponse(responseCode = "204", description = "User deleted successfully"),
+                    @ApiResponse(responseCode = "200", description = "User deleted successfully"),
                     @ApiResponse(responseCode = "404", description = "User not found")
             }
     )

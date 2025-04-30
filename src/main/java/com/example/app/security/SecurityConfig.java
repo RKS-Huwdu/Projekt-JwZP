@@ -30,8 +30,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/swagger-ui/**", "/v3/**").permitAll()
                         .requestMatchers("/public/**").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/user").hasAnyAuthority("FREE_USER", "PREMIUM_USER")
+                        .requestMatchers("/user").hasAnyAuthority("FREE_USER", "PREMIUM_USER", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(userDetailsService())

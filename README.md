@@ -46,7 +46,7 @@ Użytkownicy premium zyskują dodatkowe funkcje, które ułatwiają organizację
 **Wymagania projektowe:\
 ■ Domenę i zakres funkcjonalny należy ustalić z prowadzącym
 
-Publiczne endpointy:
+Publiczne endpointy:\
 POST /public/register – rejestracja nowego użytkownika\
 GET /public/info - podstawowe informacje o aplikacji
 
@@ -54,16 +54,16 @@ Autoryzacja i zarządzanie użytkownikami\
 GET /user/me – pobranie danych aktualnie zalogowanego użytkownika\
 GET /user/friends – pobranie listy znajomych\
 GET /user/user - informacje podstawowe o wszystkich uzytkownikach\
-GET /user/user/{username} - informacje podstawowe o uzytkowniku na podstawie username\
-PUT /user/me – aktualizacja zalogowanego danych użytkownika\
-PATCH /user/password/ - aktualizacja hasła zalogowanego użytkownika\
+GET /user/{username} - informacje podstawowe o uzytkowniku na podstawie username\
+PUT /user/update – aktualizacja zalogowanego danych użytkownika\
+PATCH /user/password - aktualizacja hasła zalogowanego użytkownika\
 POST /user/{username}/invite-friend - wyslij zaproszenie dla uzytkownika do znajomych\
 DELETE /user/{username}/invite-friend - usun zaproszenie\
 GET /user/invitations - sprawdz swoje zaproszenia do znjomych\
 DELETE /user/{username}/delete-friend - usun znajomego\
 POST /user/invitations/{username}/accept - zaakceptuj zaproszenie do znajomych\
 DELETE /user/me – usunięcie konta\
-GET /user/{id} -(tylko admin) informacje podstawowe o uzytkowniku na podstawie id\ 
+GET /user/{id} -(tylko admin) informacje podstawowe o uzytkowniku na podstawie id \ 
 DELETE /user/{id} -(tylko admin) usuwanie uzytkownika na podstawie id\
 PATCH /user/role/{id} (tylko admin)\
 DELETE /user/role/{id} (tylko admin) - usuniecie \

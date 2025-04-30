@@ -22,21 +22,6 @@ public class PublicController {
     }
 
     @Operation(
-            summary = "Get all users",
-            description = "Get all users from the database",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "OK"
-                    )
-            }
-    )
-    @GetMapping("/users")
-    public List<UserDTO> getAllUsers() {
-        return userService.findAll();
-    }
-
-    @Operation(
             summary = "Register user",
             description = "Create user in the database",
             responses = {
