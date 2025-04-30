@@ -128,7 +128,7 @@ public class UserService {
 
     private void validateUniqueness(CreateUserDTO dto) {
         if (userRepository.findByUsername(dto.username()).isPresent()) {
-            throw new UserAlreadyExistsException("Username already taken: " + dto.username());
+            throw new UsernameAlreadyUsedException("Username already taken: " + dto.username());
         }
         if (userRepository.existsByEmail(dto.email())) {
             throw new EmailAlreadyUsedException("Email już istnieje: " + dto.email());

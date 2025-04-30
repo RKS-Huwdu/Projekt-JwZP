@@ -60,9 +60,15 @@ public class GlobalExceptionHandler {
         return Map.of("error", ex.getMessage());
     }
 
+    @ExceptionHandler(UsernameAlreadyUsedException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, String> handleUsernameAlreadyUsed(UsernameAlreadyUsedException ex) {
+        return Map.of("error", ex.getMessage());
+    }
+
     @ExceptionHandler(UserAlreadyExistsException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public Map<String, String> handleUserAlreadyUsed(UserAlreadyExistsException ex) {
+    public Map<String, String> handleUserAlreadyExist(UserAlreadyExistsException ex) {
         return Map.of("error", ex.getMessage());
     }
 
