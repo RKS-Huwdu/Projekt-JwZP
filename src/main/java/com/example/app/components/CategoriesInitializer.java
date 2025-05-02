@@ -26,7 +26,8 @@ public class CategoriesInitializer implements CommandLineRunner {
             "Szkoła",
             "Kino",
             "Atrakcja turystyczna",
-            "Plac zabaw"
+            "Plac zabaw",
+            "Zabytek"
     );
 
     @Override

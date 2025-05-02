@@ -13,7 +13,8 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Place{
+public class Place {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -21,26 +22,30 @@ public class Place{
     @Column(nullable = false, unique = true)
     private String name;
 
-    @ManyToOne
+    @Column
+    private String address;
+
+    @Column
+    private String country;
+
+    @Column
+    private String city;
+
+    @Column
+    private String note;
+
+    @Column
+    private double latitude;
+
+    @Column
+    private double longitude;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    private double latitude;
-
-    private double longitude;
-
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "place_user",
-            joinColumns = @JoinColumn(name = "place_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     @JsonIgnore
-    private Set<User> users = new HashSet<>();
-
-    public Place(PlaceDTO placeDTO, Category category) {
-        name = placeDTO.name();
-        latitude = placeDTO.latitude();
-        longitude = placeDTO.longitude();
-        this.category = category;
-    }
+    private User user;
 }
