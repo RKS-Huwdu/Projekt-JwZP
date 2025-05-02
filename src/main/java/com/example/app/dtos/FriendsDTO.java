@@ -1,5 +1,6 @@
 package com.example.app.dtos;
 
+import com.example.app.entities.Friends;
 import com.example.app.entities.FriendshipStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,4 +17,14 @@ public class FriendsDTO {
     private String receiverUsername;
     private FriendshipStatus status;
     private LocalDateTime createdAt;
+
+    public static FriendsDTO fromEntity(Friends f) {
+        return new FriendsDTO(
+                f.getId(),
+                f.getRequester().getUsername(),
+                f.getReceiver().getUsername(),
+                f.getStatus(),
+                f.getCreatedAt()
+        );
+    }
 }

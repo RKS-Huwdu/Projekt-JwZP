@@ -14,3 +14,4 @@ public interface FriendsRepository extends JpaRepository<Friends, Long> {
     Optional<Friends> findByRequesterAndReceiver(User requester, User receiver);
     void deleteByRequesterAndReceiver(User requester, User receiver);
 }
+

@@ -32,14 +32,14 @@ public class FriendService {
         User user = getUser(username);
         return friendRepository.findByRequesterOrReceiver(user, user).stream()
                 .filter(friend -> friend.getStatus() == FriendshipStatus.ACCEPTED)
-                .map(this::mapToDTO)
+                .map(FriendsDTO::fromEntity)
                 .collect(Collectors.toList());
     }
 
     public List<FriendsDTO> getInvitations(String username) {
         User user = getUser(username);
         return friendRepository.findByReceiverAndStatus(user, FriendshipStatus.PENDING).stream()
-                .map(this::mapToDTO)
+                .map(FriendsDTO::fromEntity)
                 .collect(Collectors.toList());
     }
 
@@ -60,7 +60,7 @@ public class FriendService {
         friends.setRequester(requester);
         friends.setReceiver(receiver);
         friends.setStatus(FriendshipStatus.PENDING);
-        return mapToDTO(friendRepository.save(friends));
+        return FriendsDTO.fromEntity(friendRepository.save(friends));
     }
 
     public void deleteInvitation(String requesterUsername, String receiverUsername) {
@@ -76,7 +76,7 @@ public class FriendService {
         Friends friends = friendRepository.findByRequesterAndReceiver(requester, receiver)
                 .orElseThrow(() -> new InvitationNotFoundException("Invitation not found"));
         friends.setStatus(FriendshipStatus.ACCEPTED);
-        return mapToDTO(friendRepository.save(friends));
+        return FriendsDTO.fromEntity(friendRepository.save(friends));
     }
 
     public void deleteFriend(String requesterUsername, String receiverUsername) {
@@ -85,7 +85,7 @@ public class FriendService {
 
         Optional<Friends> friendOpt = friendRepository.findByRequesterAndReceiver(requester, receiver);
 
-        if (!friendOpt.isPresent()) {
+        if (friendOpt.isEmpty()) {
             friendOpt = friendRepository.findByRequesterAndReceiver(receiver, requester);
         }
 
@@ -93,18 +93,6 @@ public class FriendService {
                 new FriendshipNotFoundException("Friendship not found between " + requesterUsername + " and " + receiverUsername));
 
         friendRepository.delete(friend);
-    }
-
-
-
-    private FriendsDTO mapToDTO(Friends f) {
-        return new FriendsDTO(
-                f.getId(),
-                f.getRequester().getUsername(),
-                f.getReceiver().getUsername(),
-                f.getStatus(),
-                f.getCreatedAt()
-        );
     }
 
     private User getUser(String username) {
