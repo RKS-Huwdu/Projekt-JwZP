@@ -11,7 +11,10 @@ public record PlaceDTO(Long id,
                        String category,
                        double latitude,
                        double longitude,
-                       Set<String> users) {
+                       String address,
+                       String country,
+                       String city,
+                       String note) {
     public static PlaceDTO fromEntity(Place place) {
         return new PlaceDTO(
                 place.getId(),
@@ -19,9 +22,10 @@ public record PlaceDTO(Long id,
                 place.getCategory().getName(),
                 place.getLatitude(),
                 place.getLongitude(),
-                place.getUsers().stream()
-                        .map(User::getUsername)
-                        .collect(Collectors.toSet())
+                place.getAddress(),
+                place.getCountry(),
+                place.getCity(),
+                place.getNote()
 
         );
     }

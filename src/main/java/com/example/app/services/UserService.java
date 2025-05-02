@@ -131,7 +131,7 @@ public class UserService {
             throw new UsernameAlreadyUsedException("Username already taken: " + dto.username());
         }
         if (userRepository.existsByEmail(dto.email())) {
-            throw new EmailAlreadyUsedException("Email już istnieje: " + dto.email());
+            throw new EmailAlreadyUsedException("Email already exists: " + dto.email());
         }
     }
 }

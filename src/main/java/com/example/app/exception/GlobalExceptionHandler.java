@@ -48,6 +48,18 @@ public class GlobalExceptionHandler {
         return Map.of("error", ex.getMessage());
     }
 
+    @ExceptionHandler(CategoryNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> handleCategoryNotFound(CategoryNotFoundException ex) {
+        return Map.of("error", ex.getMessage());
+    }
+
+    @ExceptionHandler(PlaceNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> handleCategoryNotFound(PlaceNotFoundException ex) {
+        return Map.of("error", ex.getMessage());
+    }
+
     @ExceptionHandler(RoleNotFoundException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Map<String, String> handleRoleNotFound(RoleNotFoundException ex) {
@@ -80,5 +92,11 @@ public class GlobalExceptionHandler {
                 errors.put(error.getField(), error.getDefaultMessage())
         );
         return errors;
+    }
+
+    @ExceptionHandler(ResourceOwnershipException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Map<String, String> handleOwnershipException(ResourceOwnershipException ex) {
+        return Map.of("error", ex.getMessage());
     }
 }
