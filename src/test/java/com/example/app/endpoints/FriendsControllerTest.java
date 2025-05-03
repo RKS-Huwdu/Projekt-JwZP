@@ -148,7 +148,6 @@ public class FriendsControllerTest {
 
     @Test
     void shouldAcceptInvitationAndReturnDTO() throws Exception {
-        // Nadpisz domyślną konfigurację mocka dla tego konkretnego testu
         FriendsDTO acceptedInviteResponse = new FriendsDTO();
         acceptedInviteResponse.setId(pendingInvitationDTO.getId());
         acceptedInviteResponse.setRequesterUsername(friendUsername);
@@ -175,7 +174,7 @@ public class FriendsControllerTest {
                 .thenThrow(new CannotInviteYourselfException("Cannot send invite to yourself."));
 
         mockMvc.perform(post("/user/{username}/invite-friend", testUsername).with(user(customUser)))
-                .andExpect(status().isBadRequest()); // Oczekuj statusu 400 Bad Request
+                .andExpect(status().isBadRequest());
 
         verify(friendService, times(1)).sendInvitation(testUsername, testUsername);
     }
@@ -195,7 +194,7 @@ public class FriendsControllerTest {
         doThrow(new InvitationNotFoundException("Invitation not found")).when(friendService).deleteInvitation(testUsername, friendUsername);
 
         mockMvc.perform(delete("/user/{username}/invite-friend", friendUsername).with(user(customUser)))
-                .andExpect(status().isNotFound()); // Oczekuj statusu 404 Not Found
+                .andExpect(status().isNotFound());
 
         verify(friendService, times(1)).deleteInvitation(testUsername, friendUsername);
     }
@@ -206,7 +205,7 @@ public class FriendsControllerTest {
                 .thenThrow(new InvitationNotFoundException("Invitation not found"));
 
         mockMvc.perform(post("/user/invitations/{username}/accept", friendUsername).with(user(customUser)))
-                .andExpect(status().isNotFound()); // Oczekuj statusu 404 Not Found
+                .andExpect(status().isNotFound());
 
         verify(friendService, times(1)).acceptInvitation(testUsername, friendUsername);
     }
@@ -216,7 +215,7 @@ public class FriendsControllerTest {
         doThrow(new FriendshipNotFoundException("Friendship not found")).when(friendService).deleteFriend(testUsername, friendUsername);
 
         mockMvc.perform(delete("/user/{username}/delete-friend", friendUsername).with(user(customUser)))
-                .andExpect(status().isNotFound()); // Oczekuj statusu 404 Not Found
+                .andExpect(status().isNotFound());
 
         verify(friendService, times(1)).deleteFriend(testUsername, friendUsername);
     }
@@ -234,7 +233,7 @@ public class FriendsControllerTest {
     @Test
     void shouldReturnUnauthorizedWhenNotAuthenticatedToGetFriends() throws Exception {
         mockMvc.perform(get("/user/friends"))
-                .andExpect(status().isUnauthorized()); // Oczekuj statusu 401 Unauthorized
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
