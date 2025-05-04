@@ -9,6 +9,8 @@ CREATE TABLE places (
     country VARCHAR,
     city VARCHAR,
     note VARCHAR,
+    is_public BOOLEAN,
+    post_date TIMESTAMP WITH TIME ZONE,
     CONSTRAINT fk_place_category
         FOREIGN KEY (category_id)
         REFERENCES categories(id)

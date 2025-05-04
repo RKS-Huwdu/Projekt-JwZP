@@ -40,6 +40,33 @@ public class PlaceController {
     }
 
     @Operation(
+            summary = "Get all private places",
+            description = "Retrieve a list of all private places for the authenticated user",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Places list retrieved"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+            }
+    )
+    @GetMapping("/private")
+    public List<PlaceDTO> getAllPlacesPrivate(@AuthenticationPrincipal CustomUserDetails user){
+        return placeService.findAllPrivate(user.getUsername());
+    }
+
+    @Operation(
+            summary = "Get all private places",
+            description = "Retrieve a list of all private places for the authenticated user",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Places list retrieved"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+            }
+    )
+    @GetMapping("/friend/{friendUsername}")
+    public List<PlaceDTO> getAllFriendPlaces(@AuthenticationPrincipal CustomUserDetails user,
+                                             @PathVariable String friendUsername){
+        return placeService.findFriendPlaces(user.getUsername(), friendUsername);
+    }
+
+    @Operation(
             summary = "Get place by ID",
             description = "Retrieve a place's information by its ID",
             responses = {

@@ -71,9 +71,8 @@ GET /user/account/status – sprawdzenie statusu premium
 
 
 Zarządzanie miejscami\
-POST /places/public – dodanie nowego miejsca publicznego (znajomi moga zobaczyc)\
-POST /places/private – dodanie nowego miejsca prywatnego\
-GET /places/friend/{username}- pobranie informacji o miejscach przyjaciela\ 
+POST /places – dodanie nowego miejsca\
+GET /places/friend/{username}- pobranie informacji o publicznych miejscach przyjaciela\ 
 GET /places – pobranie wszystkich miejsc użytkownika\
 GET /places/private - pobranie wszystkich prywatny miejsc użytkownika\
 GET /places/nearest - pobranie najbliższego miejsca użytkownika\
