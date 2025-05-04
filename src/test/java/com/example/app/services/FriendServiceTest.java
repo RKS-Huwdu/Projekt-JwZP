@@ -5,12 +5,10 @@ import com.example.app.entities.Friends;
 import com.example.app.entities.FriendshipStatus;
 import com.example.app.entities.User;
 import com.example.app.exception.CannotInviteYourselfException;
-import com.example.app.exception.FriendshipNotFoundException;
 import com.example.app.repositories.FriendsRepository;
 import com.example.app.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
@@ -18,15 +16,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.Mockito.when;
@@ -193,6 +188,26 @@ public class FriendServiceTest {
         assertThrows(UsernameNotFoundException.class, () -> {
             friendService.deleteFriend("nonexistent", "nonexistent");
         });
+    }
+
+    @Test
+    void isFriendWith_whenUsersAreFriends_returnTrue() {
+        when(userRepository.findByUsername(user1.getUsername())).thenReturn(Optional.of(user1));
+        when(friendsRepository.findByRequesterOrReceiver(user1, user1)).thenReturn(List.of(accepted));
+
+        boolean result = friendService.isFriendWith(user1.getUsername(), user2.getUsername());
+
+        assertTrue(result);
+    }
+
+    @Test
+    void isFriendWith_whenUsersAreNotFriends_returnFalse() {
+        when(userRepository.findByUsername(user1.getUsername())).thenReturn(Optional.of(user1));
+        when(friendsRepository.findByRequesterOrReceiver(user1, user1)).thenReturn(List.of());
+
+        boolean result = friendService.isFriendWith(user1.getUsername(), user2.getUsername());
+
+        assertFalse(result);
     }
 
 }

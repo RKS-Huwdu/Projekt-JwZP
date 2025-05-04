@@ -15,7 +15,11 @@ public class GoogleMapsService {
     @Value("${google.maps.api.key}")
     private String apiKey;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
+
+    public GoogleMapsService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     public record GeoResult(double lat, double lng, String address, String city, String country) {}
 
