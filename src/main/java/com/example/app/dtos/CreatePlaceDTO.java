@@ -16,5 +16,6 @@ public record CreatePlaceDTO(
         @DecimalMax(value = "180.0", message = "Longitude must be <= 180")
         double longitude,
         String address,
-        String note
+        String note,
+        Boolean isPublic
 ) {}

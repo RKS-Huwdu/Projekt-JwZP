@@ -60,6 +60,12 @@ public class GlobalExceptionHandler {
         return Map.of("error", ex.getMessage());
     }
 
+    @ExceptionHandler(FriendNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> friendNotFound(FriendNotFoundException ex) {
+        return Map.of("error", ex.getMessage());
+    }
+
     @ExceptionHandler(RoleNotFoundException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Map<String, String> handleRoleNotFound(RoleNotFoundException ex) {

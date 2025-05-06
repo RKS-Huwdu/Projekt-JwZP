@@ -6,27 +6,26 @@ import com.example.app.dtos.UpdatePlaceDTO;
 import com.example.app.entities.Category;
 import com.example.app.entities.Place;
 import com.example.app.entities.User;
-import com.example.app.exception.CategoryNotFoundException;
-import com.example.app.exception.PlaceNotFoundException;
-import com.example.app.exception.ResourceOwnershipException;
-import com.example.app.exception.UserNotFoundException;
+import com.example.app.exception.*;
 import com.example.app.repositories.CategoryRepository;
 import com.example.app.repositories.PlaceRepository;
 import com.example.app.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
+import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
-public class PlaceService{
+public class PlaceService {
     private final PlaceRepository placeRepository;
     private final CategoryRepository categoryRepository;
-
     private final UserRepository userRepository;
+    private final FriendService friendService;
     private final GoogleMapsService googleMapsService;
+    private final Clock clock;
 
     private record ResolvedLocation(
             double latitude,
@@ -34,32 +33,55 @@ public class PlaceService{
             String address,
             String city,
             String country
-    ) {}
+    ) {
+    }
 
 
-    public PlaceService(PlaceRepository placeRepository,CategoryRepository categoryRepository,UserRepository userRepository,GoogleMapsService googleMapsService) {
+    public PlaceService(PlaceRepository placeRepository, CategoryRepository categoryRepository, UserRepository userRepository, GoogleMapsService googleMapsService,FriendService friendService, Clock clock) {
         this.placeRepository = placeRepository;
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
         this.googleMapsService = googleMapsService;
+        this.friendService = friendService;
+        this.clock = clock;
     }
 
-    public List<PlaceDTO> findAll(String username){
+    public List<PlaceDTO> findAll(String username) {
         List<Place> places = placeRepository.findAllByUser_Username(username);
 
         return places.stream()
                 .map(PlaceDTO::fromEntity)
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    public PlaceDTO findById(String username,Long placeId){
+    public List<PlaceDTO> findAllPrivate(String username) {
+        List<Place> places = placeRepository.findPrivatePlacesByUsername(username);
+
+        return places.stream()
+                .map(PlaceDTO::fromEntity)
+                .toList();
+    }
+
+    public List<PlaceDTO> findFriendPlaces(String userUsername, String friendUsername) {
+        if(!friendService.isFriendWith(userUsername, friendUsername)){
+            throw new FriendNotFoundException("You have no friend named: " + friendUsername);
+        }
+
+        List<Place> places = placeRepository.findPublicPlacesByUsername(friendUsername);
+
+        return places.stream()
+                .map(PlaceDTO::fromEntity)
+                .toList();
+    }
+
+    public PlaceDTO findById(String username, Long placeId) {
         Place place = placeRepository.findByIdAndUser_Username(placeId, username)
                 .orElseThrow(() -> new PlaceNotFoundException("Place not found or does not belong to user"));
         return PlaceDTO.fromEntity(place);
     }
 
     @Transactional
-    public PlaceDTO save(String username, CreatePlaceDTO dto){
+    public PlaceDTO save(String username, CreatePlaceDTO dto) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
 
@@ -68,16 +90,20 @@ public class PlaceService{
         Category category = categoryRepository.findByName(dto.category())
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
 
-        Place place = new Place();
-        place.setName(dto.name());
-        place.setCategory(category);
-        place.setLatitude(resolved.latitude());
-        place.setLongitude(resolved.longitude());
-        place.setAddress(resolved.address());
-        place.setCity(resolved.city());
-        place.setCountry(resolved.country());
-        place.setNote(dto.note());
-        place.setUser(user);
+        boolean isPublic = dto.isPublic() == null || dto.isPublic();
+
+        Place place = Place.builder()
+                .name(dto.name())
+                .category(category)
+                .latitude(resolved.latitude())
+                .longitude(resolved.longitude())
+                .address(resolved.address())
+                .city(resolved.city())
+                .country(resolved.country())
+                .note(dto.note())
+                .user(user)
+                .isPublic(isPublic)
+                .postDate(OffsetDateTime.now(clock)).build();
 
         user.getPlaces().add(place);
         placeRepository.save(place);
@@ -86,7 +112,7 @@ public class PlaceService{
     }
 
     @Transactional
-    public void deleteById(String username, Long placeId){
+    public void deleteById(String username, Long placeId) {
         Place place = placeRepository.findById(placeId)
                 .orElseThrow(() -> new PlaceNotFoundException("Place not found with id: " + placeId));
 
@@ -98,11 +124,11 @@ public class PlaceService{
     }
 
     @Transactional
-    public PlaceDTO update(String username,Long placeId, UpdatePlaceDTO dto){
+    public PlaceDTO update(String username, Long placeId, UpdatePlaceDTO dto) {
         Place place = placeRepository.findByIdAndUser_Username(placeId, username)
                 .orElseThrow(() -> new PlaceNotFoundException("Place not found or does not belong to user"));
 
-        if((dto.latitude() != 0 && dto.longitude() != 0) || (dto.address() != null && !dto.address().isBlank())){
+        if ((dto.latitude() != 0 && dto.longitude() != 0) || (dto.address() != null && !dto.address().isBlank())) {
             ResolvedLocation resolved = resolveLocation(dto.latitude(), dto.longitude(), dto.address());
             place.setLatitude(resolved.latitude());
             place.setLongitude(resolved.longitude());

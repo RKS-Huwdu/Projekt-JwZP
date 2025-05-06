@@ -95,6 +95,13 @@ public class FriendService {
         friendRepository.delete(friend);
     }
 
+    public boolean isFriendWith(String userUsername, String friendUsername) {
+        return getFriends(userUsername).stream().anyMatch(f ->
+                (f.getRequesterUsername().equals(userUsername) && f.getReceiverUsername().equals(friendUsername)) ||
+                        (f.getReceiverUsername().equals(userUsername) && f.getRequesterUsername().equals(friendUsername))
+        );
+    }
+
     private User getUser(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User '" + username + "' not found"));

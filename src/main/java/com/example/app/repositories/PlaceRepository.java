@@ -17,4 +17,12 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
 
     @EntityGraph(attributePaths = {"category"})
     List<Place> findAllByUser_Username(String username);
+
+    @Query("SELECT p FROM Place p WHERE p.user.username = :username AND p.isPublic = false")
+    @EntityGraph(attributePaths = {"category"})
+    List<Place> findPrivatePlacesByUsername(@Param("username") String username);
+
+    @Query("SELECT p FROM Place p WHERE p.user.username = :username AND p.isPublic = true")
+    @EntityGraph(attributePaths = {"category"})
+    List<Place> findPublicPlacesByUsername(@Param("username") String username);
 }

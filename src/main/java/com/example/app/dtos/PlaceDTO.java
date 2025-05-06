@@ -3,6 +3,7 @@ package com.example.app.dtos;
 import com.example.app.entities.Place;
 import com.example.app.entities.User;
 
+import java.time.OffsetDateTime;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -14,7 +15,9 @@ public record PlaceDTO(Long id,
                        String address,
                        String country,
                        String city,
-                       String note) {
+                       String note,
+                       OffsetDateTime postDate,
+                       boolean isPublic) {
     public static PlaceDTO fromEntity(Place place) {
         return new PlaceDTO(
                 place.getId(),
@@ -25,8 +28,9 @@ public record PlaceDTO(Long id,
                 place.getAddress(),
                 place.getCountry(),
                 place.getCity(),
-                place.getNote()
-
+                place.getNote(),
+                place.getPostDate(),
+                place.isPublic()
         );
     }
 }
