@@ -18,9 +18,9 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
     @EntityGraph(attributePaths = {"category"})
     List<Place> findAllByUser_Username(String username);
 
-    @Query("SELECT p FROM Place p JOIN p.sharedWith u WHERE u.id = :userId")
     @EntityGraph(attributePaths = {"category"})
-    List<Place>  findAllSharedByUserId(@Param("userId") Long userId);
+    @Query("SELECT p FROM Place p WHERE p.category.name = :category AND p.user.username = :username")
+    List<Place> findAllByCategoryAndUser_Username(@Param("category")String category,@Param("username")String username);
 
     @Query("SELECT p FROM Place p JOIN p.sharedWith u WHERE u.username = :username")
     @EntityGraph(attributePaths = {"category"})

@@ -172,6 +172,20 @@ public class PlaceService {
     }
 
     @Transactional
+    public PlaceDTO findNearestPlace(String username, double lat, double lng,String category) {
+        List<Place> places = placeRepository.findAllByCategoryAndUser_Username(category,username);
+        if (places.isEmpty()) {
+            throw new PlaceNotFoundException("User has no saved places");
+        }
+
+        Place nearest = places.stream()
+                .min(Comparator.comparingDouble(p -> haversine(lat, lng, p.getLatitude(), p.getLongitude())))
+                .orElseThrow();
+
+        return PlaceDTO.fromEntity(nearest);
+    }
+
+    @Transactional
     public PlaceDTO share(String senderUsername,String receiverUsername, Long placeId){
         Place place = placeRepository.findByIdAndUser_Username(placeId,senderUsername)
                 .orElseThrow(() -> new PlaceNotFoundException("Place not found or does not belong to user"));

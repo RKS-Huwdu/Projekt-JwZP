@@ -132,6 +132,24 @@ public class PlaceController {
     }
 
     @Operation(
+            summary = "Get the nearest place",
+            description = "Retrieve the nearest place to the authenticated user's location",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Nearest place found"),
+                    @ApiResponse(responseCode = "404", description = "No places found"),
+                    @ApiResponse(responseCode = "500", description = "Internal server error"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+            }
+    )
+    @GetMapping("/nearest/{category}")
+    public PlaceDTO getNearestPlace(@AuthenticationPrincipal CustomUserDetails user,
+                                    @PathVariable String category,
+                                    @RequestParam double latitude,
+                                    @RequestParam double longitude) {
+        return placeService.findNearestPlace(user.getUsername(), latitude, longitude,category);
+    }
+
+    @Operation(
             summary = "Update a place",
             description = "Update place details by its ID",
             responses = {
@@ -163,7 +181,6 @@ public class PlaceController {
     }
 
     @PostMapping("/{id}/share/{receiverUsername}")
-    @Transactional
     public ResponseEntity<PlaceDTO> share(@AuthenticationPrincipal CustomUserDetails user,
                                           @PathVariable Long id,
                                           @PathVariable String receiverUsername){
