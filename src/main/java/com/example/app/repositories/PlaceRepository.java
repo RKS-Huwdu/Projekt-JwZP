@@ -14,6 +14,13 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
     @Query("SELECT p FROM Place p JOIN p.users u WHERE u.id = :userId")
     List<Place>  findAllByUserId(@Param("userId") Long userId);
 
+    @Query("SELECT p FROM Place p JOIN p.usersShared u WHERE u.id = :userId")
+    List<Place>  findAllSharedByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT p FROM Place p JOIN p.users u WHERE u.username = :username AND p.id = :placeId")
+    Optional<Place> findByUsernameAndPlaceId(@Param("username") String username, @Param("placeId") Long placeId);
+
+
     @Query("SELECT p FROM Place p JOIN p.users u WHERE u.id = :userId AND p.id = :placeId")
     Optional<Place> findByUserIdAndPlaceId(@Param("userId") Long userId, @Param("placeId") Long placeId);
 

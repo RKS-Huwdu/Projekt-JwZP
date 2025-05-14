@@ -52,4 +52,8 @@ public class User {
         @JsonIgnore
         private Set<Place> places = new HashSet<>();
 
+        @ManyToMany(mappedBy = "usersShared", fetch = FetchType.EAGER)
+        @JsonIgnore
+        private Set<Place> sharedPlaces = new HashSet<>();
+
 }

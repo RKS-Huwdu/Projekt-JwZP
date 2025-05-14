@@ -106,6 +106,27 @@ public class PlaceController {
         return placeOptional.isPresent() ? ResponseEntity.ok(placeOptional.get()) : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
+    @PostMapping("/{id}/share/{username}")
+    @Transactional
+    public ResponseEntity<PlaceDTO> share(@PathVariable Long id,
+                                          @PathVariable String username) throws Exception {
+        Optional<User> user = getCurrentUser();
+        if(user.isEmpty())
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        PlaceDTO place = placeService.share(user.get(),username,id);
+        return ResponseEntity.ok(place);
+    }
+
+    @GetMapping("/shared")
+    public ResponseEntity<List<PlaceDTO>> getSharedPlaces(){
+        Optional<User> user = getCurrentUser();
+        if(user.isEmpty())
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+        return ResponseEntity.ok(placeService.findAllSharedPlaces(user.get()));
+    }
+
+
     private Optional<User> getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();

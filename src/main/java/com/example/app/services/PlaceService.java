@@ -131,5 +131,30 @@ public class PlaceService{
         return Math.abs(Math.asin(Math.sqrt(1 - Math.cos(placeLat - userLat) + Math.cos(userLat) * Math.cos(placeLat) * (1 - Math.cos(placeLng - userLng)))));
     }
 
+    @Transactional
+    public PlaceDTO share(User user,String receiverUsername, Long placeId) throws Exception {
+        Place place = placeRepository.findByUsernameAndPlaceId(user.getUsername(),placeId)
+                .orElseThrow(() -> new Exception("Place not found or does not belong to user"));
+
+        //User sender = userRepository.findByUsername(user.getUsername())
+               // .orElseThrow(()-> new Exception("User not found: " + user.getUsername()));
+
+        User receiver = userRepository.findByUsername(receiverUsername)
+                .orElseThrow(()-> new Exception("User not found: " + receiverUsername));
+        place.getUsersShared().add(receiver);
+        receiver.getSharedPlaces().add(place);
+        userRepository.saveAndFlush(receiver);
+        return PlaceDTO.fromEntity(placeRepository.saveAndFlush(place));
+    }
+
+    @Transactional
+    public List<PlaceDTO> findAllSharedPlaces(User user){
+        //User user = userRepository.findByUsername(user.getUsername())
+               // .orElseThrow(()-> new Exception("User not found: " + username));
+
+        return placeRepository.findAllSharedByUserId(user.getId()).stream()
+                .map(PlaceDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
 
 }

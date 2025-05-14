@@ -37,6 +37,14 @@ public class Place{
     @JsonIgnore
     private Set<User> users = new HashSet<>();
 
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinTable(name = "shared_user",
+            joinColumns = @JoinColumn(name = "place_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    @JsonIgnore
+    private Set<User> usersShared = new HashSet<>();
+
     public Place(PlaceDTO placeDTO, Category category) {
         name = placeDTO.name();
         latitude = placeDTO.latitude();
