@@ -11,12 +11,14 @@ import com.example.app.repositories.CategoryRepository;
 import com.example.app.repositories.PlaceRepository;
 import com.example.app.repositories.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PlaceService {
@@ -35,7 +37,6 @@ public class PlaceService {
             String country
     ) {
     }
-
 
     public PlaceService(PlaceRepository placeRepository, CategoryRepository categoryRepository, UserRepository userRepository, GoogleMapsService googleMapsService,FriendService friendService, Clock clock) {
         this.placeRepository = placeRepository;
@@ -85,7 +86,7 @@ public class PlaceService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
 
-        ResolvedLocation resolved = resolveLocation(dto.latitude(), dto.longitude(), dto.address());
+        ResolvedLocation resolved = new ResolvedLocation(dto.latitude(), dto.longitude(), dto.address(), "", "");//resolveLocation(dto.latitude(), dto.longitude(), dto.address());
 
         Category category = categoryRepository.findByName(dto.category())
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
@@ -169,6 +170,26 @@ public class PlaceService {
 
         return PlaceDTO.fromEntity(nearest);
     }
+
+    @Transactional
+    public PlaceDTO share(String senderUsername,String receiverUsername, Long placeId){
+        Place place = placeRepository.findByIdAndUser_Username(placeId,senderUsername)
+                .orElseThrow(() -> new PlaceNotFoundException("Place not found or does not belong to user"));
+
+        User receiver = userRepository.findByUsername(receiverUsername)
+                .orElseThrow(()-> new UserNotFoundException("User not found: " + receiverUsername));
+        place.getSharedWith().add(receiver);
+        receiver.getSharedPlaces().add(place);
+        userRepository.saveAndFlush(receiver);
+        return PlaceDTO.fromEntity(placeRepository.saveAndFlush(place));
+    }
+
+    public List<PlaceDTO> findAllSharedPlaces(String username){
+       return placeRepository.findAllSharedByUsername(username).stream()
+                .map(PlaceDTO::fromEntity)
+                .toList();
+    }
+
 
     private ResolvedLocation resolveLocation(double lat, double lng, String address) {
         if ((lat == 0 || lng == 0) && address != null) {
