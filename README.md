@@ -76,6 +76,7 @@ GET /places/friend/{username}- pobranie informacji o publicznych miejscach przyj
 GET /places – pobranie wszystkich miejsc użytkownika\
 GET /places/private - pobranie wszystkich prywatny miejsc użytkownika\
 GET /places/nearest - pobranie najbliższego miejsca użytkownika\
+GET /places/nearest/{category} - pobranie najbliższego miejsca użytkownika wśród miejsc z podanej kategorii\
 GET /places/{id} – pobranie szczegółów konkretnego miejsca\
 PUT /places/{id} – edycja miejsca\
 DELETE /places/{id} – usunięcie miejsca
