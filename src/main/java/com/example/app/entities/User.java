@@ -1,9 +1,7 @@
 package com.example.app.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,7 +30,6 @@ public class User {
         private String username;
 
         @Column(unique = true)
-        @Email
         private String email;
 
         @Column(nullable = false)
@@ -48,12 +45,15 @@ public class User {
         @JsonIgnore
         private Set<Role> roles = new HashSet<>();
 
-        @ManyToMany(mappedBy = "users", fetch = FetchType.EAGER)
+        @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
         @JsonIgnore
         private Set<Place> places = new HashSet<>();
 
-        @ManyToMany(mappedBy = "usersShared", fetch = FetchType.EAGER)
+        @OneToMany(mappedBy = "requester", cascade = CascadeType.ALL)
         @JsonIgnore
-        private Set<Place> sharedPlaces = new HashSet<>();
+        private Set<Friends> sentInvites = new HashSet<>();
 
+        @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
+        @JsonIgnore
+        private Set<Friends> receivedInvites = new HashSet<>();
 }

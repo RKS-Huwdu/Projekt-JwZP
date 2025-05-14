@@ -1,160 +1,197 @@
 package com.example.app.services;
 
+import com.example.app.dtos.CreatePlaceDTO;
 import com.example.app.dtos.PlaceDTO;
+import com.example.app.dtos.UpdatePlaceDTO;
 import com.example.app.entities.Category;
 import com.example.app.entities.Place;
 import com.example.app.entities.User;
+import com.example.app.exception.*;
 import com.example.app.repositories.CategoryRepository;
 import com.example.app.repositories.PlaceRepository;
 import com.example.app.repositories.UserRepository;
-import com.google.maps.errors.ApiException;
-import com.google.maps.model.LatLng;
 import jakarta.transaction.Transactional;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.io.IOException;
+import java.time.Clock;
+import java.time.OffsetDateTime;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
-public class PlaceService{
+public class PlaceService {
     private final PlaceRepository placeRepository;
     private final CategoryRepository categoryRepository;
-
     private final UserRepository userRepository;
+    private final FriendService friendService;
     private final GoogleMapsService googleMapsService;
+    private final Clock clock;
+
+    private record ResolvedLocation(
+            double latitude,
+            double longitude,
+            String address,
+            String city,
+            String country
+    ) {
+    }
 
 
-    public PlaceService(PlaceRepository placeRepository,CategoryRepository categoryRepository,UserRepository userRepository,GoogleMapsService googleMapsService) {
+    public PlaceService(PlaceRepository placeRepository, CategoryRepository categoryRepository, UserRepository userRepository, GoogleMapsService googleMapsService,FriendService friendService, Clock clock) {
         this.placeRepository = placeRepository;
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
         this.googleMapsService = googleMapsService;
+        this.friendService = friendService;
+        this.clock = clock;
     }
 
-    public List<PlaceDTO> findAll(User user){
-        return placeRepository.findAllByUserId(user.getId()).stream()
+    public List<PlaceDTO> findAll(String username) {
+        List<Place> places = placeRepository.findAllByUser_Username(username);
+
+        return places.stream()
                 .map(PlaceDTO::fromEntity)
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    public Optional<PlaceDTO> findById(User user,Long id){
-        return placeRepository.findByUserIdAndPlaceId(user.getId(),id).map(PlaceDTO::fromEntity);
+    public List<PlaceDTO> findAllPrivate(String username) {
+        List<Place> places = placeRepository.findPrivatePlacesByUsername(username);
+
+        return places.stream()
+                .map(PlaceDTO::fromEntity)
+                .toList();
+    }
+
+    public List<PlaceDTO> findFriendPlaces(String userUsername, String friendUsername) {
+        if(!friendService.isFriendWith(userUsername, friendUsername)){
+            throw new FriendNotFoundException("You have no friend named: " + friendUsername);
+        }
+
+        List<Place> places = placeRepository.findPublicPlacesByUsername(friendUsername);
+
+        return places.stream()
+                .map(PlaceDTO::fromEntity)
+                .toList();
+    }
+
+    public PlaceDTO findById(String username, Long placeId) {
+        Place place = placeRepository.findByIdAndUser_Username(placeId, username)
+                .orElseThrow(() -> new PlaceNotFoundException("Place not found or does not belong to user"));
+        return PlaceDTO.fromEntity(place);
     }
 
     @Transactional
-    public Optional<PlaceDTO> save(User user,PlaceDTO placeDTO){
-        Optional<Place> placeOptional = placeRepository.findByName(placeDTO.name());
-        Place place;
-        if(placeOptional.isPresent())
-           place = placeOptional.get();
-        else {
-            Optional<Category> category = categoryRepository.findByName(placeDTO.category());
-            if (category.isEmpty())
-                return Optional.empty();
+    public PlaceDTO save(String username, CreatePlaceDTO dto) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
 
-            place = new Place(placeDTO, category.get());
-        }
+        ResolvedLocation resolved = resolveLocation(dto.latitude(), dto.longitude(), dto.address());
 
-        place.getUsers().add(user);
+        Category category = categoryRepository.findByName(dto.category())
+                .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
+
+        boolean isPublic = dto.isPublic() == null || dto.isPublic();
+
+        Place place = Place.builder()
+                .name(dto.name())
+                .category(category)
+                .latitude(resolved.latitude())
+                .longitude(resolved.longitude())
+                .address(resolved.address())
+                .city(resolved.city())
+                .country(resolved.country())
+                .note(dto.note())
+                .user(user)
+                .isPublic(isPublic)
+                .postDate(OffsetDateTime.now(clock)).build();
+
         user.getPlaces().add(place);
-        userRepository.saveAndFlush(user);
-        return Optional.of(PlaceDTO.fromEntity(placeRepository.saveAndFlush(place)));
+        placeRepository.save(place);
+
+        return PlaceDTO.fromEntity(place);
     }
 
     @Transactional
-    public boolean deleteById(User user,Long id){
-        Optional<Place> placeOptional = placeRepository.findByUserIdAndPlaceId(user.getId(),id);
-        if(placeOptional.isEmpty()){
-            return false;
+    public void deleteById(String username, Long placeId) {
+        Place place = placeRepository.findById(placeId)
+                .orElseThrow(() -> new PlaceNotFoundException("Place not found with id: " + placeId));
+
+        if (!place.getUser().getUsername().equals(username)) {
+            throw new ResourceOwnershipException("User does not own this place");
         }
 
-        Place place = placeOptional.get();
-
-        place.getUsers().remove(user);
-        if (place.getUsers().isEmpty())
-            placeRepository.delete(place);
-        else
-            placeRepository.saveAndFlush(place);
-        return true;
+        placeRepository.delete(place);
     }
 
     @Transactional
-    public Optional<PlaceDTO> update(User user,Long placeId,PlaceDTO placeDTO){
-        Optional<Place> placeOptional = placeRepository.findByUserIdAndPlaceId(user.getId(),placeId);
+    public PlaceDTO update(String username, Long placeId, UpdatePlaceDTO dto) {
+        Place place = placeRepository.findByIdAndUser_Username(placeId, username)
+                .orElseThrow(() -> new PlaceNotFoundException("Place not found or does not belong to user"));
 
-        if(placeOptional.isEmpty())
-            return Optional.empty();
-
-        Place place = placeOptional.get();
-        place.setName(placeDTO.name());
-        place.setLatitude(placeDTO.latitude());
-        place.setLongitude(placeDTO.longitude());
-
-        Optional<Category> category = categoryRepository.findByName(placeDTO.category());
-        if(placeDTO.category() != null && category.isPresent())
-            place.setCategory(category.get());
-        else
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Category not found");
-
-        placeRepository.saveAndFlush(place);
-        return placeOptional.map(PlaceDTO::fromEntity);
-    }
-
-    public Optional<Place> getNearestPlace(User user) throws IOException, InterruptedException, ApiException {
-        LatLng userLocation = googleMapsService.getUserLocation();
-        double userLat = userLocation.lat;
-        double userLng = userLocation.lng;
-
-        List<Place> places = placeRepository.findAllByUserId(user.getId());
-
-        if(places.isEmpty())
-            return Optional.empty();
-
-        double minDistance = Double.MAX_VALUE;
-        Place nearestPlace = null;
-
-        for(Place place : places){
-            double distance = getDistance(userLat,userLng,place.getLatitude(),place.getLongitude());
-            if(distance < minDistance){
-                minDistance = distance;
-                nearestPlace = place;
-            }
+        if ((dto.latitude() != 0 && dto.longitude() != 0) || (dto.address() != null && !dto.address().isBlank())) {
+            ResolvedLocation resolved = resolveLocation(dto.latitude(), dto.longitude(), dto.address());
+            place.setLatitude(resolved.latitude());
+            place.setLongitude(resolved.longitude());
+            place.setAddress(resolved.address());
+            place.setCity(resolved.city());
+            place.setCountry(resolved.country());
         }
-        return Optional.of(nearestPlace);
-    }
 
-    private double getDistance(double userLat, double userLng, double placeLat, double placeLng){
-        return Math.abs(Math.asin(Math.sqrt(1 - Math.cos(placeLat - userLat) + Math.cos(userLat) * Math.cos(placeLat) * (1 - Math.cos(placeLng - userLng)))));
-    }
+        if (dto.category() != null && !dto.category().isBlank()) {
+            Category category = categoryRepository.findByName(dto.category())
+                    .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
+            place.setCategory(category);
+        }
 
-    @Transactional
-    public PlaceDTO share(User user,String receiverUsername, Long placeId) throws Exception {
-        Place place = placeRepository.findByUsernameAndPlaceId(user.getUsername(),placeId)
-                .orElseThrow(() -> new Exception("Place not found or does not belong to user"));
+        if (dto.name() != null && !dto.name().isBlank()) {
+            place.setName(dto.name());
+        }
 
-        //User sender = userRepository.findByUsername(user.getUsername())
-               // .orElseThrow(()-> new Exception("User not found: " + user.getUsername()));
+        if (dto.note() != null && !dto.note().isBlank()) {
+            place.setNote(dto.note());
+        }
 
-        User receiver = userRepository.findByUsername(receiverUsername)
-                .orElseThrow(()-> new Exception("User not found: " + receiverUsername));
-        place.getUsersShared().add(receiver);
-        receiver.getSharedPlaces().add(place);
-        userRepository.saveAndFlush(receiver);
-        return PlaceDTO.fromEntity(placeRepository.saveAndFlush(place));
+        placeRepository.save(place);
+
+        return PlaceDTO.fromEntity(place);
     }
 
     @Transactional
-    public List<PlaceDTO> findAllSharedPlaces(User user){
-        //User user = userRepository.findByUsername(user.getUsername())
-               // .orElseThrow(()-> new Exception("User not found: " + username));
+    public PlaceDTO findNearestPlace(String username, double lat, double lng) {
+        List<Place> places = placeRepository.findAllByUser_Username(username);
+        if (places.isEmpty()) {
+            throw new PlaceNotFoundException("User has no saved places");
+        }
 
-        return placeRepository.findAllSharedByUserId(user.getId()).stream()
-                .map(PlaceDTO::fromEntity)
-                .collect(Collectors.toList());
+        Place nearest = places.stream()
+                .min(Comparator.comparingDouble(p -> haversine(lat, lng, p.getLatitude(), p.getLongitude())))
+                .orElseThrow();
+
+        return PlaceDTO.fromEntity(nearest);
     }
 
+    private ResolvedLocation resolveLocation(double lat, double lng, String address) {
+        if ((lat == 0 || lng == 0) && address != null) {
+            var geo = googleMapsService.geocodeAddress(address)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid address"));
+            return new ResolvedLocation(geo.lat(), geo.lng(), geo.address(), geo.city(), geo.country());
+        } else if ((address == null || address.isBlank()) && lat != 0 && lng != 0) {
+            var geo = googleMapsService.reverseGeocode(lat, lng)
+                    .orElseThrow(() -> new IllegalArgumentException("Could not resolve location"));
+            return new ResolvedLocation(lat, lng, geo.address(), geo.city(), geo.country());
+        } else {
+            return new ResolvedLocation(lat, lng, address, "", "");
+        }
+    }
+
+    private double haversine(double lat1, double lon1, double lat2, double lon2) {
+        final int R = 6371;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLon / 2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
 }

@@ -1,28 +1,91 @@
 package com.example.app.services;
 
-import com.google.maps.GeoApiContext;
-import com.google.maps.GeolocationApi;
-import com.google.maps.errors.ApiException;
-import com.google.maps.model.GeolocationPayload;
-import com.google.maps.model.LatLng;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.IOException;
+import java.util.Optional;
 
 @Service
-public class GoogleMapsService{
-    private final GeoApiContext context;
+public class GoogleMapsService {
 
-    @Autowired
-    public GoogleMapsService(GeoApiContext context){
-        this.context = context;
+    @Value("${google.maps.api.key}")
+    private String apiKey;
+
+    private final RestTemplate restTemplate;
+
+    public GoogleMapsService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 
-    public LatLng getUserLocation() throws IOException, InterruptedException, ApiException {
-        return GeolocationApi.geolocate(context,new GeolocationPayload()).await().location;
+    public record GeoResult(double lat, double lng, String address, String city, String country) {}
+
+    public Optional<GeoResult> geocodeAddress(String address) {
+        String url = UriComponentsBuilder
+                .fromHttpUrl("https://maps.googleapis.com/maps/api/geocode/json")
+                .queryParam("address", address)
+                .queryParam("key", apiKey)
+                .toUriString();
+
+        ResponseEntity<JsonNode> response = restTemplate.getForEntity(url, JsonNode.class);
+        JsonNode results = response.getBody().get("results");
+
+        if (results != null && results.size() > 0) {
+            JsonNode location = results.get(0).get("geometry").get("location");
+            double lat = location.get("lat").asDouble();
+            double lng = location.get("lng").asDouble();
+
+            String formattedAddress = results.get(0).get("formatted_address").asText();
+            String city = "";
+            String country = "";
+
+            for (JsonNode comp : results.get(0).get("address_components")) {
+                JsonNode types = comp.get("types");
+                if (types.toString().contains("locality")) {
+                    city = comp.get("long_name").asText();
+                }
+                if (types.toString().contains("country")) {
+                    country = comp.get("long_name").asText();
+                }
+            }
+
+            return Optional.of(new GeoResult(lat, lng, formattedAddress, city, country));
+        }
+
+        return Optional.empty();
     }
 
+    public Optional<GeoResult> reverseGeocode(double lat, double lng) {
+        String url = UriComponentsBuilder
+                .fromHttpUrl("https://maps.googleapis.com/maps/api/geocode/json")
+                .queryParam("latlng", lat + "," + lng)
+                .queryParam("key", apiKey)
+                .toUriString();
 
+        ResponseEntity<JsonNode> response = restTemplate.getForEntity(url, JsonNode.class);
+        JsonNode results = response.getBody().get("results");
 
+        if (results != null && results.size() > 0) {
+            String formattedAddress = results.get(0).get("formatted_address").asText();
+            String city = "";
+            String country = "";
+
+            for (JsonNode comp : results.get(0).get("address_components")) {
+                JsonNode types = comp.get("types");
+                if (types.toString().contains("locality")) {
+                    city = comp.get("long_name").asText();
+                }
+                if (types.toString().contains("country")) {
+                    country = comp.get("long_name").asText();
+                }
+            }
+
+            return Optional.of(new GeoResult(lat, lng, formattedAddress, city, country));
+        }
+
+        return Optional.empty();
+    }
 }

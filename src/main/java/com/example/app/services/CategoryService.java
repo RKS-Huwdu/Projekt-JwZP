@@ -1,6 +1,7 @@
 package com.example.app.services;
 
 import com.example.app.entities.Category;
+import com.example.app.exception.CategoryNotFoundException;
 import com.example.app.repositories.CategoryRepository;
 import org.springframework.stereotype.Service;
 
@@ -22,10 +23,13 @@ public class CategoryService {
         return categoryRepository.save(category);
     }
 
-    public boolean deleteById(Long id){
-        if(categoryRepository.findById(id).isEmpty())
-            return false;
-        categoryRepository.deleteById(id);
-        return true;
+    public void deleteById(Long id){
+        Category category = categoryRepository.findById(id).orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + id));
+        categoryRepository.delete(category);
+    }
+
+    public void deleteByName(String categoryName){
+        Category category = categoryRepository.findByName(categoryName).orElseThrow(() -> new CategoryNotFoundException("Category not found: " + categoryName));
+        categoryRepository.delete(category);
     }
 }

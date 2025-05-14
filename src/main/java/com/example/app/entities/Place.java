@@ -1,19 +1,20 @@
 package com.example.app.entities;
 
-import com.example.app.dtos.PlaceDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import jakarta.persistence.*;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "places")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
-public class Place{
+@AllArgsConstructor
+public class Place {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -21,34 +22,36 @@ public class Place{
     @Column(nullable = false, unique = true)
     private String name;
 
-    @ManyToOne
+    @Column
+    private String address;
+
+    @Column
+    private String country;
+
+    @Column
+    private String city;
+
+    @Column
+    private String note;
+
+    @Column
+    private double latitude;
+
+    @Column
+    private double longitude;
+
+    @Column(name = "is_public")
+    private boolean isPublic;
+
+    @Column
+    private OffsetDateTime postDate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    private double latitude;
-
-    private double longitude;
-
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "place_user",
-            joinColumns = @JoinColumn(name = "place_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     @JsonIgnore
-    private Set<User> users = new HashSet<>();
-
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "shared_user",
-            joinColumns = @JoinColumn(name = "place_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    @JsonIgnore
-    private Set<User> usersShared = new HashSet<>();
-
-    public Place(PlaceDTO placeDTO, Category category) {
-        name = placeDTO.name();
-        latitude = placeDTO.latitude();
-        longitude = placeDTO.longitude();
-        this.category = category;
-    }
+    private User user;
 }

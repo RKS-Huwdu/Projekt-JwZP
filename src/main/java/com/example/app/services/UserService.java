@@ -1,19 +1,21 @@
 package com.example.app.services;
 
+import com.example.app.dtos.CreateUserDTO;
 import com.example.app.dtos.PasswordDTO;
+import com.example.app.dtos.UpdateUserDTO;
 import com.example.app.dtos.UserDTO;
+import com.example.app.entities.PremiumStatus;
 import com.example.app.entities.Role;
 import com.example.app.entities.RoleName;
 import com.example.app.entities.User;
+import com.example.app.exception.*;
 import com.example.app.repositories.RoleRepository;
 import com.example.app.repositories.UserRepository;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -36,58 +38,100 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    public Optional<UserDTO> findById(Long id) {
-        return userRepository.findById(id).map(UserDTO::fromEntity);
+    public UserDTO findById(Long id) {
+        return userRepository.findById(id)
+                .map(UserDTO::fromEntity)
+                .orElseThrow(() -> new UserNotFoundException("User with ID " + id + " not found"));
     }
 
-    public Optional<UserDTO> getCurrentUserInfo(String username) {
+    public UserDTO getCurrentUserInfo(String username) {
         return userRepository.findByUsername(username)
-                .map(UserDTO::fromEntity);
+                .map(UserDTO::fromEntity)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
     }
 
-    public UserDTO registerUser(User user) {
-        Set<Role> roles = new HashSet<>();
-        roles.add(roleRepository.findByName(RoleName.FREE_USER)
-                .orElseThrow(() -> new RuntimeException("Default role not found")));
+    public PremiumStatus getCurrentUserPremiumStatus(String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found: " + username));
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRoles(roles);
+        boolean isPremium = user.getRoles().stream()
+                .anyMatch(role -> role.getName() == RoleName.PREMIUM_USER);
 
-        User newUser = userRepository.save(user);
-        return UserDTO.fromEntity(newUser);
+        return isPremium ? PremiumStatus.PREMIUM : PremiumStatus.NON_PREMIUM;
     }
 
-    public boolean deleteById(Long id) {
-        return userRepository.findById(id).map(user -> {
-            userRepository.delete(user);
-            return true;
-        }).orElse(false);
+    public UserDTO registerUser(CreateUserDTO createUserDTO) {
+        validateUniqueness(createUserDTO);
+
+        Role defaultRole = roleRepository.findByName(RoleName.FREE_USER)
+                .orElseThrow(() -> new RoleNotFoundException("Default role not found"));
+
+        User newUser = toEntity(createUserDTO, defaultRole);
+        User saved = userRepository.save(newUser);
+        return UserDTO.fromEntity(saved);
     }
 
-    public boolean deleteCurrentUser(String username) {
-        return userRepository.findByUsername(username)
-                .map(user -> {
-                    userRepository.delete(user);
-                    return true;
-                }).orElse(false);
+    public void deleteById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User with ID " + id + " not found"));
+        userRepository.delete(user);
     }
 
-    public Optional<UserDTO> updateCurrentUser(UserDTO userDto, String username) {
+    public void deleteCurrentUser(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
+        userRepository.delete(user);
+    }
 
-        if (userDto.username() != null) user.setUsername(userDto.username());
-        if (userDto.email() != null) user.setEmail(userDto.email());
+    public UserDTO updateCurrentUser(UpdateUserDTO updateUserDTO, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
 
-        user = userRepository.save(user);
-        return Optional.of(UserDTO.fromEntity(user));
+        if (updateUserDTO.username() != null && !updateUserDTO.username().isBlank()) user.setUsername(updateUserDTO.username());
+        if (updateUserDTO.email() != null && !updateUserDTO.email().isBlank()) user.setEmail(updateUserDTO.email());
+
+        User updatedUser = userRepository.save(user);
+        return UserDTO.fromEntity(updatedUser);
     }
 
     public void updatePassword(PasswordDTO passwordDTO, String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
 
         user.setPassword(passwordEncoder.encode(passwordDTO.password()));
         userRepository.save(user);
+    }
+
+    public void addRoleToUser(Long id, RoleName roleName) {
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found: " + id));
+        Role role = roleRepository.findByName(roleName).orElseThrow(() -> new RoleNotFoundException("Role not found: " + roleName));
+
+        user.getRoles().add(role);
+        userRepository.save(user);
+    }
+
+    public void deleteRoleFromUser(Long id, RoleName roleName) {
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found: " + id));
+
+        user.getRoles().removeIf(r -> r.getName().equals(roleName));
+
+        userRepository.save(user);
+    }
+
+    private User toEntity(CreateUserDTO dto, Role defaultRole) {
+        User user = new User();
+        user.setUsername(dto.username());
+        user.setEmail(dto.email());
+        user.setPassword(passwordEncoder.encode(dto.password()));
+        user.setRoles(Set.of(defaultRole));
+        return user;
+    }
+
+    private void validateUniqueness(CreateUserDTO dto) {
+        if (userRepository.findByUsername(dto.username()).isPresent()) {
+            throw new UsernameAlreadyUsedException("Username already taken: " + dto.username());
+        }
+        if (userRepository.existsByEmail(dto.email())) {
+            throw new EmailAlreadyUsedException("Email already exists: " + dto.email());
+        }
     }
 }
