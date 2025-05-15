@@ -181,6 +181,7 @@ public class PlaceController {
     }
 
     @PostMapping("/{id}/share/{receiverUsername}")
+    @Transactional
     public ResponseEntity<PlaceDTO> share(@AuthenticationPrincipal CustomUserDetails user,
                                           @PathVariable Long id,
                                           @PathVariable String receiverUsername){
