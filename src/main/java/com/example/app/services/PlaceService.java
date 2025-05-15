@@ -11,12 +11,14 @@ import com.example.app.repositories.CategoryRepository;
 import com.example.app.repositories.PlaceRepository;
 import com.example.app.repositories.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PlaceService {
