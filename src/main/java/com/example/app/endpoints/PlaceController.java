@@ -132,6 +132,24 @@ public class PlaceController {
     }
 
     @Operation(
+            summary = "Get the nearest place",
+            description = "Retrieve the nearest place to the authenticated user's location",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Nearest place found"),
+                    @ApiResponse(responseCode = "404", description = "No places found"),
+                    @ApiResponse(responseCode = "500", description = "Internal server error"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+            }
+    )
+    @GetMapping("/nearest/{category}")
+    public PlaceDTO getNearestPlace(@AuthenticationPrincipal CustomUserDetails user,
+                                    @PathVariable String category,
+                                    @RequestParam double latitude,
+                                    @RequestParam double longitude) {
+        return placeService.findNearestPlace(user.getUsername(), latitude, longitude,category);
+    }
+
+    @Operation(
             summary = "Update a place",
             description = "Update place details by its ID",
             responses = {
@@ -147,5 +165,27 @@ public class PlaceController {
                                                 @Valid @RequestBody UpdatePlaceDTO dto) {
 
         return placeService.update(user.getUsername(), id, dto);
+    }
+
+    @Operation(
+            summary = "Get all shared places",
+            description = "Retrieve a list of all places shared with the authenticated user",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Places list retrieved"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+            }
+    )
+    @GetMapping("/shared")
+    public List<PlaceDTO> getSharedPlaces(@AuthenticationPrincipal CustomUserDetails user) {
+        return placeService.findAllSharedPlaces(user.getUsername());
+    }
+
+    @PostMapping("/{id}/share/{receiverUsername}")
+    @Transactional
+    public ResponseEntity<PlaceDTO> share(@AuthenticationPrincipal CustomUserDetails user,
+                                          @PathVariable Long id,
+                                          @PathVariable String receiverUsername){
+        PlaceDTO place = placeService.share(user.getUsername(),receiverUsername,id);
+        return ResponseEntity.ok(place);
     }
 }

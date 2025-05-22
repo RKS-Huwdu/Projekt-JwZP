@@ -56,4 +56,9 @@ public class User {
         @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
         @JsonIgnore
         private Set<Friends> receivedInvites = new HashSet<>();
+
+        @ManyToMany(mappedBy = "sharedWith", fetch = FetchType.EAGER)
+        @JsonIgnore
+        private Set<Place> sharedPlaces = new HashSet<>();
+
 }
