@@ -182,10 +182,9 @@ public class PlaceController {
 
     @PostMapping("/{id}/share/{receiverUsername}")
     @Transactional
-    public ResponseEntity<PlaceDTO> share(@AuthenticationPrincipal CustomUserDetails user,
+    public void share(@AuthenticationPrincipal CustomUserDetails user,
                                           @PathVariable Long id,
                                           @PathVariable String receiverUsername){
-        PlaceDTO place = placeService.share(user.getUsername(),receiverUsername,id);
-        return ResponseEntity.ok(place);
+        placeService.share(user.getUsername(),receiverUsername,id);
     }
 }

@@ -84,10 +84,13 @@ public class PlaceService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
 
-        ResolvedLocation resolved = new ResolvedLocation(dto.latitude(), dto.longitude(), dto.address(), "", "");//resolveLocation(dto.latitude(), dto.longitude(), dto.address());
+        if(placeRepository.findByNameAndUser_Username(dto.name(),username).isPresent())
+            throw new PlaceAlreadyExistsException("Place already exists: " + dto.name());
 
         Category category = categoryRepository.findByName(dto.category())
-                .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
+                .orElseThrow(() -> new CategoryNotFoundException("Category not found: " + dto.category()));
+
+        ResolvedLocation resolved = resolveLocation(dto.latitude(), dto.longitude(), dto.address());
 
         boolean isPublic = dto.isPublic() == null || dto.isPublic();
 
@@ -127,6 +130,12 @@ public class PlaceService {
         Place place = placeRepository.findByIdAndUser_Username(placeId, username)
                 .orElseThrow(() -> new PlaceNotFoundException("Place not found or does not belong to user"));
 
+        if (dto.category() != null && !dto.category().isBlank()) {
+            Category category = categoryRepository.findByName(dto.category())
+                    .orElseThrow(() -> new CategoryNotFoundException("Category not found" + dto.category()));
+            place.setCategory(category);
+        }
+
         if ((dto.latitude() != 0 && dto.longitude() != 0) || (dto.address() != null && !dto.address().isBlank())) {
             ResolvedLocation resolved = resolveLocation(dto.latitude(), dto.longitude(), dto.address());
             place.setLatitude(resolved.latitude());
@@ -134,12 +143,6 @@ public class PlaceService {
             place.setAddress(resolved.address());
             place.setCity(resolved.city());
             place.setCountry(resolved.country());
-        }
-
-        if (dto.category() != null && !dto.category().isBlank()) {
-            Category category = categoryRepository.findByName(dto.category())
-                    .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
-            place.setCategory(category);
         }
 
         if (dto.name() != null && !dto.name().isBlank()) {
@@ -184,7 +187,7 @@ public class PlaceService {
     }
 
     @Transactional
-    public PlaceDTO share(String senderUsername,String receiverUsername, Long placeId){
+    public void share(String senderUsername,String receiverUsername, Long placeId){
         Place place = placeRepository.findByIdAndUser_Username(placeId,senderUsername)
                 .orElseThrow(() -> new PlaceNotFoundException("Place not found or does not belong to user"));
 
@@ -192,8 +195,8 @@ public class PlaceService {
                 .orElseThrow(()-> new UserNotFoundException("User not found: " + receiverUsername));
         place.getSharedWith().add(receiver);
         receiver.getSharedPlaces().add(place);
-        userRepository.saveAndFlush(receiver);
-        return PlaceDTO.fromEntity(placeRepository.saveAndFlush(place));
+        userRepository.save(receiver);
+        placeRepository.save(place);
     }
 
     public List<PlaceDTO> findAllSharedPlaces(String username){

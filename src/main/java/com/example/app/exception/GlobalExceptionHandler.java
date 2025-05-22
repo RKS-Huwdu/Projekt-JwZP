@@ -105,4 +105,10 @@ public class GlobalExceptionHandler {
     public Map<String, String> handleOwnershipException(ResourceOwnershipException ex) {
         return Map.of("error", ex.getMessage());
     }
+
+    @ExceptionHandler(PlaceAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, String> handlePlaceAlreadyExists(PlaceAlreadyExistsException ex) {
+        return Map.of("error", ex.getMessage());
+    }
 }
