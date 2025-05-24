@@ -21,20 +21,28 @@ public class CategoryController {
     }
 
 
-    @Operation(summary = "Get all categories", description = "Retrieve all categories",
+    @Operation(
+            summary = "Pobierz wszystkie kategorie",
+            description = "Pobiera listę wszystkich dostępnych kategorii.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Categories retrieved successfully")
-            })
+                    @ApiResponse(responseCode = "200", description = "Kategorie pobrane pomyślnie")
+            }
+    )
     @GetMapping
     public List<Category> getAllCategories(){
         return categoryService.findAll();
     }
 
 
-    @Operation(summary = "Create a category", description = "Create and save a new category",
+    @Operation(
+            summary = "Utwórz kategorię (tylko admin)",
+            description = "Tworzy i zapisuje nową kategorię w systemie. Dostępne tylko dla administratorów.",
             responses = {
-                    @ApiResponse(responseCode = "201", description = "Category created successfully")
-            })
+                    @ApiResponse(responseCode = "201", description = "Kategoria utworzona pomyślnie"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
+                    @ApiResponse(responseCode = "403", description = "Brak uprawnień (wymagana rola ADMIN)")
+            }
+    )
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<Category> createCategory(@RequestBody Category category) {
@@ -42,25 +50,21 @@ public class CategoryController {
     }
 
 
-    @Operation(summary = "Delete a category", description = "Delete a category by its ID",
+    @Operation(
+            summary = "Usuń kategorię po ID (tylko admin)",
+            description = "Trwale usuwa kategorię z systemu na podstawie jej ID. Dostępne tylko dla administratorów.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Category deleted successfully"),
-                    @ApiResponse(responseCode = "404", description = "Category not found")
-            })
+                    @ApiResponse(responseCode = "204", description = "Kategoria usunięta pomyślnie (brak treści)"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
+                    @ApiResponse(responseCode = "403", description = "Brak uprawnień (wymagana rola ADMIN)"),
+                    @ApiResponse(responseCode = "404", description = "Kategoria o podanym ID nie znaleziona")
+            }
+    )
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public void deleteCategoryByID(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteCategoryByID(@PathVariable Long id) {
         categoryService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 
-//    @Operation(summary = "Delete a category", description = "Delete a category by its Name",
-//            responses = {
-//                    @ApiResponse(responseCode = "200", description = "Category deleted successfully"),
-//                    @ApiResponse(responseCode = "404", description = "Category not found")
-//            })
-//    @PreAuthorize("hasRole('ADMIN')")
-//    @DeleteMapping("/{name}")
-//    public void deleteCategoryByName(@PathVariable String name) {
-//        categoryService.deleteByName(name);
-//    }
 }

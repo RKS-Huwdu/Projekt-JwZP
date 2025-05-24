@@ -27,11 +27,11 @@ public class PlaceController {
     }
 
     @Operation(
-            summary = "Get all places",
-            description = "Retrieve a list of all places for the authenticated user",
+            summary = "Pobierz wszystkie miejsca użytkownika",
+            description = "Pobiera listę wszystkich miejsc dodanych przez aktualnie zalogowanego użytkownika.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Places list retrieved"),
-                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+                    @ApiResponse(responseCode = "200", description = "Lista miejsc pobrana pomyślnie"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp")
             }
     )
     @GetMapping
@@ -40,11 +40,11 @@ public class PlaceController {
     }
 
     @Operation(
-            summary = "Get all private places",
-            description = "Retrieve a list of all private places for the authenticated user",
+            summary = "Pobierz wszystkie prywatne miejsca użytkownika",
+            description = "Pobiera listę wszystkich prywatnych miejsc dodanych przez aktualnie zalogowanego użytkownika.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Places list retrieved"),
-                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+                    @ApiResponse(responseCode = "200", description = "Lista prywatnych miejsc pobrana pomyślnie"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp")
             }
     )
     @GetMapping("/private")
@@ -53,11 +53,12 @@ public class PlaceController {
     }
 
     @Operation(
-            summary = "Get all private places",
-            description = "Retrieve a list of all private places for the authenticated user",
+            summary = "Pobierz publiczne miejsca znajomego",
+            description = "Pobiera listę publicznych miejsc dodanych przez wskazanego znajomego aktualnie zalogowanego użytkownika.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Places list retrieved"),
-                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+                    @ApiResponse(responseCode = "200", description = "Lista miejsc znajomego pobrana pomyślnie"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
+                    @ApiResponse(responseCode = "404", description = "Znajomy nie znaleziony")
             }
     )
     @GetMapping("/friend/{friendUsername}")
@@ -67,12 +68,12 @@ public class PlaceController {
     }
 
     @Operation(
-            summary = "Get place by ID",
-            description = "Retrieve a place's information by its ID",
+            summary = "Pobierz miejsce po ID",
+            description = "Pobiera szczegółowe informacje o miejscu na podstawie jego unikalnego ID, jeśli należy do aktualnie zalogowanego użytkownika.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Place retrieved successfully"),
-                    @ApiResponse(responseCode = "404", description = "Place not found"),
-                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+                    @ApiResponse(responseCode = "200", description = "Miejsce pobrane pomyślnie"),
+                    @ApiResponse(responseCode = "404", description = "Miejsce nie znalezione lub nie należy do użytkownika"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp")
             }
     )
     @GetMapping("/{id}")
@@ -82,12 +83,14 @@ public class PlaceController {
 
 
     @Operation(
-            summary = "Save a new place",
-            description = "Save a new place for the authenticated user",
+            summary = "Dodaj nowe miejsce",
+            description = "Dodaje nowe miejsce dla aktualnie zalogowanego użytkownika.",
             responses = {
-                    @ApiResponse(responseCode = "201", description = "Place created successfully"),
-                    @ApiResponse(responseCode = "400", description = "Invalid data provided"),
-                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+                    @ApiResponse(responseCode = "201", description = "Miejsce utworzone pomyślnie"),
+                    @ApiResponse(responseCode = "400", description = "Nieprawidłowe dane wejściowe (błędy walidacji)"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
+                    @ApiResponse(responseCode = "409", description = "Miejsce o podanej nazwie już istnieje dla użytkownika"),
+                    @ApiResponse(responseCode = "403", description = "Limit miejsc dla darmowego konta został przekroczony")
             }
     )
     @PostMapping
@@ -100,28 +103,29 @@ public class PlaceController {
     }
 
     @Operation(
-            summary = "Delete a place",
-            description = "Delete a place by its ID",
+            summary = "Usuń miejsce",
+            description = "Trwale usuwa miejsce z systemu na podstawie jego ID, jeśli należy do aktualnie zalogowanego użytkownika.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Place deleted successfully"),
-                    @ApiResponse(responseCode = "404", description = "Place not found"),
-                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+                    @ApiResponse(responseCode = "204", description = "Miejsce usunięte pomyślnie (brak treści)"),
+                    @ApiResponse(responseCode = "404", description = "Miejsce nie znalezione lub nie należy do użytkownika"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp")
             }
     )
     @DeleteMapping("/{id}")
     @Transactional
-    public void deletePlace(@AuthenticationPrincipal CustomUserDetails user, @PathVariable Long id) {
+    public ResponseEntity<Void> deletePlace(@AuthenticationPrincipal CustomUserDetails user, @PathVariable Long id) {
         placeService.deleteById(user.getUsername(),id);
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(
-            summary = "Get the nearest place",
-            description = "Retrieve the nearest place to the authenticated user's location",
+            summary = "Pobierz najbliższe miejsce",
+            description = "Pobiera najbliższe miejsce do podanych współrzędnych geograficznych, należące do aktualnie zalogowanego użytkownika.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Nearest place found"),
-                    @ApiResponse(responseCode = "404", description = "No places found"),
-                    @ApiResponse(responseCode = "500", description = "Internal server error"),
-                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+                    @ApiResponse(responseCode = "200", description = "Najbliższe miejsce znalezione"),
+                    @ApiResponse(responseCode = "404", description = "Brak miejsc dla użytkownika"),
+                    @ApiResponse(responseCode = "500", description = "Wewnętrzny błąd serwera (np. problem z geokodowaniem)"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp")
             }
     )
     @GetMapping("/nearest")
@@ -132,13 +136,13 @@ public class PlaceController {
     }
 
     @Operation(
-            summary = "Get the nearest place",
-            description = "Retrieve the nearest place to the authenticated user's location",
+            summary = "Pobierz najbliższe miejsce w danej kategorii",
+            description = "Pobiera najbliższe miejsce w określonej kategorii do podanych współrzędnych geograficznych, należące do aktualnie zalogowanego użytkownika.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Nearest place found"),
-                    @ApiResponse(responseCode = "404", description = "No places found"),
-                    @ApiResponse(responseCode = "500", description = "Internal server error"),
-                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+                    @ApiResponse(responseCode = "200", description = "Najbliższe miejsce znalezione"),
+                    @ApiResponse(responseCode = "404", description = "Brak miejsc w danej kategorii dla użytkownika"),
+                    @ApiResponse(responseCode = "500", description = "Wewnętrzny błąd serwera (np. problem z geokodowaniem)"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp")
             }
     )
     @GetMapping("/nearest/{category}")
@@ -150,12 +154,13 @@ public class PlaceController {
     }
 
     @Operation(
-            summary = "Update a place",
-            description = "Update place details by its ID",
+            summary = "Zaktualizuj miejsce",
+            description = "Aktualizuje szczegóły miejsca na podstawie jego ID, jeśli należy do aktualnie zalogowanego użytkownika.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Place updated successfully"),
-                    @ApiResponse(responseCode = "404", description = "Place not found"),
-                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+                    @ApiResponse(responseCode = "200", description = "Miejsce zaktualizowane pomyślnie"),
+                    @ApiResponse(responseCode = "400", description = "Nieprawidłowe dane wejściowe (błędy walidacji)"),
+                    @ApiResponse(responseCode = "404", description = "Miejsce nie znalezione lub nie należy do użytkownika"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp")
             }
     )
     @PutMapping("/{id}")
@@ -168,11 +173,11 @@ public class PlaceController {
     }
 
     @Operation(
-            summary = "Get all shared places",
-            description = "Retrieve a list of all places shared with the authenticated user",
+            summary = "Pobierz wszystkie miejsca udostępnione użytkownikowi",
+            description = "Pobiera listę wszystkich miejsc, które zostały udostępnione aktualnie zalogowanemu użytkownikowi.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Places list retrieved"),
-                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+                    @ApiResponse(responseCode = "200", description = "Lista udostępnionych miejsc pobrana pomyślnie"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp")
             }
     )
     @GetMapping("/shared")
@@ -180,11 +185,21 @@ public class PlaceController {
         return placeService.findAllSharedPlaces(user.getUsername());
     }
 
+    @Operation(
+            summary = "Udostępnij miejsce innemu użytkownikowi",
+            description = "Udostępnia wybrane miejsce innemu użytkownikowi na podstawie jego nazwy użytkownika. Wymaga, aby udostępniane miejsce należało do aktualnie zalogowanego użytkownika.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Miejsce udostępnione pomyślnie"),
+                    @ApiResponse(responseCode = "404", description = "Miejsce nie znalezione lub nie należy do użytkownika, albo użytkownik odbierający nie istnieje"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp")
+            }
+    )
     @PostMapping("/{id}/share/{receiverUsername}")
     @Transactional
-    public void share(@AuthenticationPrincipal CustomUserDetails user,
-                                          @PathVariable Long id,
-                                          @PathVariable String receiverUsername){
+    public ResponseEntity<Void> share(@AuthenticationPrincipal CustomUserDetails user,
+                                      @PathVariable Long id,
+                                      @PathVariable String receiverUsername){
         placeService.share(user.getUsername(),receiverUsername,id);
+        return ResponseEntity.ok().build();
     }
 }

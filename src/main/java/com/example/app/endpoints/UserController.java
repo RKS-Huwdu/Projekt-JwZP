@@ -29,11 +29,12 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Get current user",
-            description = "Retrieve the currently authenticated user's information",
+            summary = "Pobierz dane bieżącego użytkownika",
+            description = "Pobiera informacje o aktualnie zalogowanym użytkowniku.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "User data retrieved"),
-                    @ApiResponse(responseCode = "404", description = "User not found")
+                    @ApiResponse(responseCode = "200", description = "Dane użytkownika pobrane pomyślnie"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp (brak lub nieprawidłowy token)"),
+                    @ApiResponse(responseCode = "404", description = "Użytkownik nie znaleziony")
             }
     )
     @GetMapping("/me")
@@ -42,13 +43,12 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Get all users",
-            description = "Get all users from the database",
+            summary = "Pobierz wszystkich użytkowników",
+            description = "Pobiera listę wszystkich użytkowników zarejestrowanych w systemie. Dostępne dla odpowiednio autoryzowanych użytkowników (np. Admin).",
             responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "OK"
-                    )
+                    @ApiResponse(responseCode = "200", description = "Lista użytkowników pobrana pomyślnie"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
+                    @ApiResponse(responseCode = "403", description = "Brak uprawnień do wykonania tej operacji")
             }
     )
     @GetMapping("/users")
@@ -58,10 +58,12 @@ public class UserController {
 
 
     @Operation(
-            summary = "Check premium status",
-            description = "Check premium status of the currently authenticated user",
+            summary = "Sprawdź status premium bieżącego użytkownika",
+            description = "Sprawdza, czy aktualnie zalogowany użytkownik posiada status konta premium.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "OK")
+                    @ApiResponse(responseCode = "200", description = "Status premium sprawdzony pomyślnie"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
+                    @ApiResponse(responseCode = "404", description = "Użytkownik nie znaleziony")
             }
     )
     @GetMapping("/account/status")
@@ -70,11 +72,14 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Update current user",
-            description = "Update details of the currently authenticated user",
+            summary = "Aktualizuj dane bieżącego użytkownika",
+            description = "Aktualizuje wybrane dane (np. email, nazwa użytkownika) aktualnie zalogowanego użytkownika.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "User updated successfully"),
-                    @ApiResponse(responseCode = "404", description = "User not found")
+                    @ApiResponse(responseCode = "200", description = "Dane użytkownika zaktualizowane pomyślnie"),
+                    @ApiResponse(responseCode = "400", description = "Nieprawidłowe dane wejściowe (błędy walidacji)"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
+                    @ApiResponse(responseCode = "404", description = "Użytkownik nie znaleziony"),
+                    @ApiResponse(responseCode = "409", description = "Konflikt danych (np. nowa nazwa użytkownika lub email jest już zajęty)")
             }
     )
     @PutMapping("/update")
@@ -84,11 +89,12 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Delete current user",
-            description = "Delete the currently authenticated user from the system",
+            summary = "Usuń konto bieżącego użytkownika",
+            description = "Trwale usuwa konto aktualnie zalogowanego użytkownika z systemu.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "User deleted successfully"),
-                    @ApiResponse(responseCode = "404", description = "User not found")
+                    @ApiResponse(responseCode = "200", description = "Konto użytkownika usunięte pomyślnie (brak treści)"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
+                    @ApiResponse(responseCode = "404", description = "Użytkownik nie znaleziony")
             }
     )
     @DeleteMapping("/me")
@@ -97,11 +103,13 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Change password",
-            description = "Update the password of the currently authenticated user",
+            summary = "Zmień hasło bieżącego użytkownika",
+            description = "Aktualizuje hasło dla aktualnie zalogowanego użytkownika.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Password changed successfully"),
-                    @ApiResponse(responseCode = "400", description = "Invalid password data")
+                    @ApiResponse(responseCode = "200", description = "Hasło zmienione pomyślnie"),
+                    @ApiResponse(responseCode = "400", description = "Nieprawidłowe dane hasła (np. błędy walidacji)"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
+                    @ApiResponse(responseCode = "404", description = "Użytkownik nie znaleziony")
             }
     )
     @PatchMapping("/password")
@@ -112,11 +120,13 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Get user by ID (admin only)",
-            description = "Retrieve a user's information by ID (accessible only by admin)",
+            summary = "Pobierz użytkownika po ID (tylko admin)",
+            description = "Pobiera szczegółowe informacje o użytkowniku na podstawie jego unikalnego ID. Operacja dostępna wyłącznie dla administratorów.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "User data retrieved"),
-                    @ApiResponse(responseCode = "404", description = "User not found")
+                    @ApiResponse(responseCode = "200", description = "Dane użytkownika pobrane pomyślnie"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
+                    @ApiResponse(responseCode = "403", description = "Brak uprawnień (wymagana rola ADMIN)"),
+                    @ApiResponse(responseCode = "404", description = "Użytkownik o podanym ID nie znaleziony")
             }
     )
     @PreAuthorize("hasRole('ADMIN')")
@@ -126,11 +136,13 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Delete user by ID (admin only)",
-            description = "Delete a user from the system using their ID (accessible only by admin)",
+            summary = "Usuń użytkownika po ID (tylko admin)",
+            description = "Trwale usuwa użytkownika z systemu na podstawie jego ID. Operacja dostępna wyłącznie dla administratorów.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "User deleted successfully"),
-                    @ApiResponse(responseCode = "404", description = "User not found")
+                    @ApiResponse(responseCode = "200", description = "Użytkownik usunięty pomyślnie (brak treści)"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
+                    @ApiResponse(responseCode = "403", description = "Brak uprawnień (wymagana rola ADMIN)"),
+                    @ApiResponse(responseCode = "404", description = "Użytkownik o podanym ID nie znaleziony")
             }
     )
     @PreAuthorize("hasRole('ADMIN')")
@@ -140,11 +152,14 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Add user role by ID (admin only)",
-            description = "Add user role by ID",
+            summary = "Dodaj rolę użytkownikowi (tylko admin)",
+            description = "Przypisywanie określonej roli (np. PREMIUM_USER, ADMIN) użytkownikowi o zadanym ID. Operacja dostępna wyłącznie dla administratorów.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Role added successfully"),
-                    @ApiResponse(responseCode = "404", description = "User not found")
+                    @ApiResponse(responseCode = "200", description = "Rola dodana użytkownikowi pomyślnie"),
+                    @ApiResponse(responseCode = "400", description = "Nieprawidłowa nazwa roli podana w ścieżce"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
+                    @ApiResponse(responseCode = "403", description = "Brak uprawnień (wymagana rola ADMIN)"),
+                    @ApiResponse(responseCode = "404", description = "Użytkownik lub rola (typ roli) nie znalezione")
             }
     )
     @PreAuthorize("hasRole('ADMIN')")
@@ -154,11 +169,14 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Delete user role by ID (admin only)",
-            description = "Delete user role by ID",
+            summary = "Usuń rolę użytkownikowi (tylko admin)",
+            description = "Odbieranie określonej roli użytkownikowi o zadanym ID. Operacja dostępna wyłącznie dla administratorów.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Role deleted successfully"),
-                    @ApiResponse(responseCode = "404", description = "User not found")
+                    @ApiResponse(responseCode = "200", description = "Rola usunięta użytkownikowi pomyślnie"),
+                    @ApiResponse(responseCode = "400", description = "Nieprawidłowa nazwa roli podana w ścieżce"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
+                    @ApiResponse(responseCode = "403", description = "Brak uprawnień (wymagana rola ADMIN)"),
+                    @ApiResponse(responseCode = "404", description = "Użytkownik nie znaleziony lub użytkownik nie posiadał danej roli")
             }
     )
     @PreAuthorize("hasRole('ADMIN')")

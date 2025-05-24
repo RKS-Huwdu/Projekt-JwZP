@@ -22,11 +22,12 @@ public class FriendController {
     }
 
     @Operation(
-            summary = "Get all friends",
-            description = "Retrieve a list of friends for the authenticated user",
+            summary = "Pobierz wszystkich znajomych",
+            description = "Pobiera listę wszystkich znajomych aktualnie zalogowanego użytkownika.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Friends list retrieved"),
-                    @ApiResponse(responseCode = "404", description = "No friends found")
+                    @ApiResponse(responseCode = "200", description = "Lista znajomych pobrana pomyślnie"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
+                    @ApiResponse(responseCode = "404", description = "Brak znajomych")
             }
     )
     @GetMapping("/friends")
@@ -35,11 +36,12 @@ public class FriendController {
     }
 
     @Operation(
-            summary = "Get all invitations",
-            description = "Retrieve a list of invitations for the authenticated user",
+            summary = "Pobierz wszystkie zaproszenia do znajomych",
+            description = "Pobiera listę oczekujących zaproszeń do znajomych dla aktualnie zalogowanego użytkownika.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Invitations list retrieved"),
-                    @ApiResponse(responseCode = "404", description = "No invitations found")
+                    @ApiResponse(responseCode = "200", description = "Lista zaproszeń pobrana pomyślnie"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
+                    @ApiResponse(responseCode = "404", description = "Brak zaproszeń")
             }
     )
     @GetMapping("/invitations")
@@ -48,11 +50,14 @@ public class FriendController {
     }
 
     @Operation(
-            summary = "Invite a friend",
-            description = "Send a friend invitation to a user",
+            summary = "Wyślij zaproszenie do znajomych",
+            description = "Wysyła zaproszenie do znajomych do innego użytkownika. Użytkownik nie może wysłać zaproszenia do samego siebie ani do użytkownika, z którym już istnieje zaproszenie.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Friend invitation sent successfully"),
-                    @ApiResponse(responseCode = "400", description = "Invalid request")
+                    @ApiResponse(responseCode = "200", description = "Zaproszenie do znajomych wysłane pomyślnie"),
+                    @ApiResponse(responseCode = "400", description = "Nieprawidłowe żądanie (np. próba zaproszenia samego siebie)"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
+                    @ApiResponse(responseCode = "404", description = "Użytkownik nie znaleziony"),
+                    @ApiResponse(responseCode = "409", description = "Zaproszenie do tego użytkownika już istnieje")
             }
     )
     @PostMapping("/{username}/invite-friend")
@@ -62,11 +67,12 @@ public class FriendController {
     }
 
     @Operation(
-            summary = "Delete a friend invitation",
-            description = "Delete an invitation sent to a friend",
+            summary = "Usuń wysłane zaproszenie do znajomych",
+            description = "Usuwa zaproszenie do znajomych wysłane przez aktualnie zalogowanego użytkownika do innego użytkownika.",
             responses = {
-                    @ApiResponse(responseCode = "204", description = "Invitation deleted successfully"),
-                    @ApiResponse(responseCode = "404", description = "Invitation not found")
+                    @ApiResponse(responseCode = "204", description = "Zaproszenie usunięte pomyślnie (brak treści)"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
+                    @ApiResponse(responseCode = "404", description = "Zaproszenie nie znalezione")
             }
     )
     @DeleteMapping("/{username}/invite-friend")
@@ -77,11 +83,13 @@ public class FriendController {
     }
 
     @Operation(
-            summary = "Accept a friend invitation",
-            description = "Accept a friend invitation from another user",
+            summary = "Akceptuj zaproszenie do znajomych",
+            description = "Akceptuje zaproszenie do znajomych od innego użytkownika.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Friend invitation accepted"),
-                    @ApiResponse(responseCode = "400", description = "Invalid request")
+                    @ApiResponse(responseCode = "200", description = "Zaproszenie do znajomych zaakceptowane pomyślnie"),
+                    @ApiResponse(responseCode = "400", description = "Nieprawidłowe żądanie"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
+                    @ApiResponse(responseCode = "404", description = "Zaproszenie nie znalezione")
             }
     )
     @PostMapping("/invitations/{username}/accept")
@@ -91,11 +99,12 @@ public class FriendController {
     }
 
     @Operation(
-            summary = "Delete a friend",
-            description = "Remove a friend from the authenticated user's friend list",
+            summary = "Usuń znajomego",
+            description = "Usuwa znajomego z listy znajomych aktualnie zalogowanego użytkownika.",
             responses = {
-                    @ApiResponse(responseCode = "204", description = "Friend deleted successfully"),
-                    @ApiResponse(responseCode = "404", description = "Friend not found")
+                    @ApiResponse(responseCode = "204", description = "Znajomy usunięty pomyślnie (brak treści)"),
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
+                    @ApiResponse(responseCode = "404", description = "Znajomy nie znaleziony")
             }
     )
     @DeleteMapping("/{username}/delete-friend")

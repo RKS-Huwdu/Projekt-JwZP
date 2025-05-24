@@ -24,12 +24,10 @@ public class PublicController {
     }
 
     @Operation(
-            summary = "Info",
-            description = "Get info about application",
+            summary = "Pobierz informacje o aplikacji",
+            description = "Zwraca ogólne informacje o aplikacji.",
             responses = {
-                    @ApiResponse(
-                            responseCode = "200"
-                    )
+                    @ApiResponse(responseCode = "200", description = "Informacje o aplikacji pobrane pomyślnie")
             }
     )
     @GetMapping("/info")
@@ -39,13 +37,12 @@ public class PublicController {
 
 
     @Operation(
-            summary = "Register user",
-            description = "Create user in the database",
+            summary = "Rejestracja nowego użytkownika",
+            description = "Umożliwia utworzenie nowego konta użytkownika w systemie.",
             responses = {
-                    @ApiResponse(
-                            responseCode = "201",
-                            description = "User created"
-                    )
+                    @ApiResponse(responseCode = "201", description = "Użytkownik zarejestrowany pomyślnie"),
+                    @ApiResponse(responseCode = "400", description = "Nieprawidłowe dane wejściowe (błędy walidacji)"),
+                    @ApiResponse(responseCode = "409", description = "Nazwa użytkownika lub email są już zajęte")
             }
     )
     @PostMapping("/register")
