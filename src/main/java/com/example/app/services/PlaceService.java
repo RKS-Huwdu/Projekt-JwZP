@@ -3,9 +3,7 @@ package com.example.app.services;
 import com.example.app.dtos.CreatePlaceDTO;
 import com.example.app.dtos.PlaceDTO;
 import com.example.app.dtos.UpdatePlaceDTO;
-import com.example.app.entities.Category;
-import com.example.app.entities.Place;
-import com.example.app.entities.User;
+import com.example.app.entities.*;
 import com.example.app.exception.*;
 import com.example.app.repositories.CategoryRepository;
 import com.example.app.repositories.PlaceRepository;
@@ -26,6 +24,8 @@ public class PlaceService {
     private final FriendService friendService;
     private final GoogleMapsService googleMapsService;
     private final Clock clock;
+
+    private static final int FREE_USER_PLACE_LIMIT = 10;
 
     private record ResolvedLocation(
             double latitude,
@@ -83,6 +83,31 @@ public class PlaceService {
     public PlaceDTO save(String username, CreatePlaceDTO dto) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
+
+        boolean isFreeUser = false;
+        boolean isPremiumUser = false;
+        boolean isAdmin = false;
+
+        for (Role role : user.getRoles()) {
+            if (role.getName() == RoleName.FREE_USER) {
+                isFreeUser = true;
+            } else if (role.getName() == RoleName.PREMIUM_USER) {
+                isPremiumUser = true;
+            } else if (role.getName() == RoleName.ADMIN) {
+                isAdmin = true;
+            }
+        }
+
+        if (isFreeUser && !isPremiumUser && !isAdmin) {
+            int currentPlaceCount = user.getPlaces().size();
+            if (currentPlaceCount >= FREE_USER_PLACE_LIMIT) {
+                throw new PlaceLimitExceededException(
+                        "Użytkownicy z darmowym planem mogą dodać maksymalnie " + FREE_USER_PLACE_LIMIT + " miejsc. " +
+                                "Rozważ przejście na plan premium, aby dodawać miejsca bez limitu."
+                );
+            }
+        }
+
 
         if(placeRepository.findByNameAndUser_Username(dto.name(),username).isPresent())
             throw new PlaceAlreadyExistsException("Place already exists: " + dto.name());

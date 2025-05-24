@@ -111,4 +111,10 @@ public class GlobalExceptionHandler {
     public Map<String, String> handlePlaceAlreadyExists(PlaceAlreadyExistsException ex) {
         return Map.of("error", ex.getMessage());
     }
+
+    @ExceptionHandler(PlaceLimitExceededException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Map<String, String> handlePlaceLimitExceeded(PlaceLimitExceededException ex) {
+        return Map.of("error", ex.getMessage());
+    }
 }
