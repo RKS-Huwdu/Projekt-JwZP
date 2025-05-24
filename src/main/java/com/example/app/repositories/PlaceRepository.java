@@ -16,6 +16,9 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
     Optional<Place> findByIdAndUser_Username(Long id, String username);
 
     @EntityGraph(attributePaths = {"category"})
+    Optional<Place> findByNameAndUser_Username(String name, String username);
+
+    @EntityGraph(attributePaths = {"category"})
     List<Place> findAllByUser_Username(String username);
 
     @EntityGraph(attributePaths = {"category"})
