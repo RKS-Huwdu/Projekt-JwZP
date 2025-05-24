@@ -3,6 +3,7 @@ package com.example.app.endpoints;
 import com.example.app.dtos.CreatePlaceDTO;
 import com.example.app.dtos.PlaceDTO;
 import com.example.app.dtos.UpdatePlaceDTO;
+import com.example.app.exception.PlaceNotFoundException;
 import com.example.app.repositories.UserRepository;
 import com.example.app.security.CustomUserDetails;
 import com.example.app.services.PlaceService;
@@ -120,22 +121,39 @@ public class PlaceController {
 
     @Operation(
             summary = "Pobierz najbliższe miejsce",
-            description = "Pobiera najbliższe miejsce do podanych współrzędnych geograficznych, należące do aktualnie zalogowanego użytkownika.",
+            description = "Pobiera najbliższe miejsce (opcjonalnie w określonej kategorii) do podanych współrzędnych geograficznych, należące do aktualnie zalogowanego użytkownika.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Najbliższe miejsce znalezione"),
+                    @ApiResponse(responseCode = "204", description = "Brak miejsc, ale żądanie zakończone pomyślnie (brak treści)"),
                     @ApiResponse(responseCode = "404", description = "Brak miejsc dla użytkownika"),
                     @ApiResponse(responseCode = "500", description = "Wewnętrzny błąd serwera (np. problem z geokodowaniem)"),
                     @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp")
             }
     )
     @GetMapping("/nearest")
-    public PlaceDTO getNearestPlace(@AuthenticationPrincipal CustomUserDetails user,
-                                                    @RequestParam double latitude,
-                                                    @RequestParam double longitude) {
-        return placeService.findNearestPlace(user.getUsername(), latitude, longitude);
-    }
+    public ResponseEntity<PlaceDTO> findNearestPlace(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam double latitude,
+            @RequestParam double longitude,
+            @RequestParam(required = false) String category
+    ) {
+        String username = userDetails.getUsername();
 
-    @Operation(
+        try {
+            if (category != null && !category.isBlank()) {
+                return ResponseEntity.ok(
+                        placeService.findNearestPlace(username, latitude, longitude, category)
+                );
+            } else {
+                return ResponseEntity.ok(
+                        placeService.findNearestPlace(username, latitude, longitude)
+                );
+            }
+        } catch (PlaceNotFoundException ex) {
+            return ResponseEntity.noContent().build();
+        }
+    }
+    /*@Operation(
             summary = "Pobierz najbliższe miejsce w danej kategorii",
             description = "Pobiera najbliższe miejsce w określonej kategorii do podanych współrzędnych geograficznych, należące do aktualnie zalogowanego użytkownika.",
             responses = {
@@ -151,7 +169,7 @@ public class PlaceController {
                                     @RequestParam double latitude,
                                     @RequestParam double longitude) {
         return placeService.findNearestPlace(user.getUsername(), latitude, longitude,category);
-    }
+    }*/
 
     @Operation(
             summary = "Zaktualizuj miejsce",
