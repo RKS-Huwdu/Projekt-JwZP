@@ -26,8 +26,7 @@ public class FriendController {
             description = "Pobiera listę wszystkich znajomych aktualnie zalogowanego użytkownika.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Lista znajomych pobrana pomyślnie"),
-                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
-                    @ApiResponse(responseCode = "404", description = "Brak znajomych")
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp")
             }
     )
     @GetMapping("/friends")
@@ -41,7 +40,6 @@ public class FriendController {
             responses = {
                     @ApiResponse(responseCode = "200", description = "Lista zaproszeń pobrana pomyślnie"),
                     @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
-                    @ApiResponse(responseCode = "404", description = "Brak zaproszeń")
             }
     )
     @GetMapping("/invitations")
@@ -89,7 +87,7 @@ public class FriendController {
                     @ApiResponse(responseCode = "200", description = "Zaproszenie do znajomych zaakceptowane pomyślnie"),
                     @ApiResponse(responseCode = "400", description = "Nieprawidłowe żądanie"),
                     @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
-                    @ApiResponse(responseCode = "404", description = "Zaproszenie nie znalezione")
+                    @ApiResponse(responseCode = "404", description = "Zaproszenie nie znalezione/Użytkownik nie znaleziony"),
             }
     )
     @PostMapping("/invitations/{username}/accept")

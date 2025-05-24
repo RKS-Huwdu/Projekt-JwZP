@@ -213,6 +213,9 @@ public class PlaceService {
 
     @Transactional
     public void share(String senderUsername,String receiverUsername, Long placeId){
+        if (senderUsername.equals(receiverUsername)) {
+            throw new CannotShareWithYourselfException("Cannot share place to yourself.");
+        }
         Place place = placeRepository.findByIdAndUser_Username(placeId,senderUsername)
                 .orElseThrow(() -> new PlaceNotFoundException("Place not found or does not belong to user"));
 

@@ -191,7 +191,8 @@ public class PlaceController {
             responses = {
                     @ApiResponse(responseCode = "200", description = "Miejsce udostępnione pomyślnie"),
                     @ApiResponse(responseCode = "404", description = "Miejsce nie znalezione lub nie należy do użytkownika, albo użytkownik odbierający nie istnieje"),
-                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp")
+                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
+                    @ApiResponse(responseCode = "400", description = "Nie można udostępnić miejsca, samemu sobie")
             }
     )
     @PostMapping("/{id}/share/{receiverUsername}")

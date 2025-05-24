@@ -117,4 +117,16 @@ public class GlobalExceptionHandler {
     public Map<String, String> handlePlaceLimitExceeded(PlaceLimitExceededException ex) {
         return Map.of("error", ex.getMessage());
     }
+
+    @ExceptionHandler(CategoryAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, String> handleCategoryAlreadyExists(CategoryAlreadyExistsException ex) {
+        return Map.of("error", ex.getMessage());
+    }
+
+    @ExceptionHandler(CannotShareWithYourselfException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleCannotShareWithYourself(CannotShareWithYourselfException ex) {
+        return Map.of("error", ex.getMessage());
+    }
 }

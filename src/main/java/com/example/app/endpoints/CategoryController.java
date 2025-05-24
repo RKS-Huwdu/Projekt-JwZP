@@ -40,7 +40,8 @@ public class CategoryController {
             responses = {
                     @ApiResponse(responseCode = "201", description = "Kategoria utworzona pomyślnie"),
                     @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp"),
-                    @ApiResponse(responseCode = "403", description = "Brak uprawnień (wymagana rola ADMIN)")
+                    @ApiResponse(responseCode = "403", description = "Brak uprawnień (wymagana rola ADMIN)"),
+                    @ApiResponse(responseCode = "409", description = "Kategoria o podanej nazwie już istnieje")
             }
     )
     @PreAuthorize("hasRole('ADMIN')")

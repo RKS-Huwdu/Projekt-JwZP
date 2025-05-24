@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -82,14 +83,31 @@ public class UserService {
         userRepository.delete(user);
     }
 
-    public UserDTO updateCurrentUser(UpdateUserDTO updateUserDTO, String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
+    public UserDTO updateCurrentUser(UpdateUserDTO updateUserDTO, String currentUsername) {
+        User userToUpdate = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + currentUsername));
 
-        if (updateUserDTO.username() != null && !updateUserDTO.username().isBlank()) user.setUsername(updateUserDTO.username());
-        if (updateUserDTO.email() != null && !updateUserDTO.email().isBlank()) user.setEmail(updateUserDTO.email());
+        String newUsername = updateUserDTO.username();
+        if (newUsername != null && !newUsername.isBlank() && !newUsername.equals(userToUpdate.getUsername())) {
+            if (userRepository.findByUsername(newUsername).isPresent()) {
+                throw new UsernameAlreadyUsedException("Nazwa użytkownika '" + newUsername + "' jest już zajęta.");
+            }
+            userToUpdate.setUsername(newUsername);
+        }
 
-        User updatedUser = userRepository.save(user);
+        String newEmail = updateUserDTO.email();
+        if (newEmail != null && !newEmail.isBlank()) {
+            if (!newEmail.equals(userToUpdate.getEmail())) {
+                if (userRepository.existsByEmail(newEmail)) {
+
+                    throw new EmailAlreadyUsedException("Email '" + newEmail + "' jest już używany.");
+                }
+                userToUpdate.setEmail(newEmail);
+            } else {
+                userToUpdate.setEmail(newEmail);
+            }
+        }
+        User updatedUser = userRepository.save(userToUpdate);
         return UserDTO.fromEntity(updatedUser);
     }
 
