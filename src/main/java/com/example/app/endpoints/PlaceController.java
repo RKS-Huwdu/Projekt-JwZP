@@ -153,23 +153,6 @@ public class PlaceController {
             return ResponseEntity.noContent().build();
         }
     }
-    /*@Operation(
-            summary = "Pobierz najbliższe miejsce w danej kategorii",
-            description = "Pobiera najbliższe miejsce w określonej kategorii do podanych współrzędnych geograficznych, należące do aktualnie zalogowanego użytkownika.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Najbliższe miejsce znalezione"),
-                    @ApiResponse(responseCode = "404", description = "Brak miejsc w danej kategorii dla użytkownika"),
-                    @ApiResponse(responseCode = "500", description = "Wewnętrzny błąd serwera (np. problem z geokodowaniem)"),
-                    @ApiResponse(responseCode = "401", description = "Nieautoryzowany dostęp")
-            }
-    )
-    @GetMapping("/nearest/{category}")
-    public PlaceDTO getNearestPlace(@AuthenticationPrincipal CustomUserDetails user,
-                                    @PathVariable String category,
-                                    @RequestParam double latitude,
-                                    @RequestParam double longitude) {
-        return placeService.findNearestPlace(user.getUsername(), latitude, longitude,category);
-    }*/
 
     @Operation(
             summary = "Zaktualizuj miejsce",
