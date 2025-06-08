@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -127,6 +128,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CannotShareWithYourselfException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleCannotShareWithYourself(CannotShareWithYourselfException ex) {
+        return Map.of("error", ex.getMessage());
+    }
+
+    @ExceptionHandler(LogFileNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> handleFileNotFound(LogFileNotFoundException ex) {
+        return Map.of("error", ex.getMessage());
+    }
+
+    @ExceptionHandler(UncheckedIOException.class)
+    public Map<String, String> handleIO(UncheckedIOException ex) {
         return Map.of("error", ex.getMessage());
     }
 }

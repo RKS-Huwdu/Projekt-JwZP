@@ -93,8 +93,8 @@ POST /places/{id}/share – udostępnienie miejsca innemu użytkownikowi\
 GET /places/shared – pobranie miejsc udostępnionych użytkownikowi
 
 Monitorowanie systemu i logi\
-GET /health – sprawdzenie stanu systemu\
-GET /logs – pobranie logów (tylko admin)
+GET /health – sprawdzenie stanu systemu  (tylko admin)\  
+GET /logs/{date} – pobranie logów (tylko admin)
 
 
 ■ Kod źródłowy aplikacji należy utrzymywać na Githubie lub Gitlabie\

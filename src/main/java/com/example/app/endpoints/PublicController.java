@@ -2,13 +2,17 @@ package com.example.app.endpoints;
 
 import com.example.app.dtos.CreateUserDTO;
 import com.example.app.dtos.UserDTO;
+import com.example.app.security.CustomUserDetails;
 import com.example.app.services.InfoService;
 import com.example.app.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
+import org.springframework.boot.actuate.health.HealthComponent;
+import org.springframework.boot.actuate.health.HealthEndpoint;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,21 +24,8 @@ public class PublicController {
 
     public PublicController(UserService userService, InfoService infoService) {
         this.userService = userService;
-        this.infoService = new InfoService();
+        this.infoService = infoService;
     }
-
-    @Operation(
-            summary = "Pobierz informacje o aplikacji",
-            description = "Zwraca ogólne informacje o aplikacji.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Informacje o aplikacji pobrane pomyślnie")
-            }
-    )
-    @GetMapping("/info")
-    public String getAppInfo() {
-        return infoService.getAppInfo();
-    }
-
 
     @Operation(
             summary = "Rejestracja nowego użytkownika",
@@ -50,5 +41,4 @@ public class PublicController {
         UserDTO savedUser = userService.registerUser(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }
-
 }

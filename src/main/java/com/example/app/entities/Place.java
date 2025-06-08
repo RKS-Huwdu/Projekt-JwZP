@@ -63,5 +63,5 @@ public class Place {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     @JsonIgnore
-    private Set<User> sharedWith = new HashSet<>();
+    private final Set<User> sharedWith = new HashSet<>();
 }
