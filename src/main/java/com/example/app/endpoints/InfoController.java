@@ -54,6 +54,9 @@ public class InfoController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("logs/{date}")
     public String getLogByDate(@PathVariable String date) {
+        if (!date.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            throw new IllegalArgumentException("Invalid date format");
+        }
         return infoService.getLogs(date);
     }
 
