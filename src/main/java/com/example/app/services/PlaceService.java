@@ -201,7 +201,7 @@ public class PlaceService {
     public PlaceDTO findNearestPlace(String username, double lat, double lng,String category) {
         List<Place> places = placeRepository.findAllByCategoryAndUser_Username(category,username);
         if (places.isEmpty()) {
-            throw new PlaceNotFoundException("User has no saved places");
+            throw new PlaceNotFoundException("User has no saved places of category: " + category);
         }
 
         Place nearest = places.stream()

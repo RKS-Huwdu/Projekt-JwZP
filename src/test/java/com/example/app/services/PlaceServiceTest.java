@@ -8,6 +8,7 @@ import com.example.app.exception.*;
 import com.example.app.repositories.CategoryRepository;
 import com.example.app.repositories.PlaceRepository;
 import com.example.app.repositories.UserRepository;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -16,8 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -258,6 +258,277 @@ public class PlaceServiceTest {
         assertThatThrownBy(() -> placeService.update(username,placeId,updatePlaceDTO))
                 .isInstanceOf(CategoryNotFoundException.class)
                 .hasMessageContaining("Category not found" + categoryName);
+
+    }
+
+    @Test
+    public void findAll_shouldReturnAllPlaces() {
+        String username = "username";
+        User user = new User();
+        user.setUsername(username);
+
+        Category category = new Category();
+        category.setName("category");
+        category.setId(1L);
+
+        Place place1 = new Place();
+        place1.setCategory(category);
+        place1.setId(1L);
+        place1.setName("place1");
+        place1.setUser(user);
+
+        Place place2 = new Place();
+        place2.setId(2L);
+        place2.setPublic(false);
+        place2.setCategory(category);
+        place2.setName("place2");
+        place2.setUser(user);
+
+        Place place3 = new Place();
+        place3.setId(3L);
+        place3.setName("place3");
+        place3.setCategory(category);
+        place3.setUser(user);
+
+
+
+        when(placeRepository.findAllByUser_Username(username)).thenReturn(List.of(place1,place2,place3));;
+
+        List<PlaceDTO> places = placeService.findAll(username);
+
+        assertThat(places).isNotNull();
+        assertThat(places.size()).isEqualTo(3);
+        assertThat(places.get(0).name()).isEqualTo(place1.getName());
+        assertThat(places.get(0).id()).isEqualTo(place1.getId());
+        assertThat(places.get(0).category()).isEqualTo(place1.getCategory().getName());
+
+        assertThat(places.get(1).name()).isEqualTo(place2.getName());
+        assertThat(places.get(1).id()).isEqualTo(place2.getId());
+        assertThat(places.get(1).category()).isEqualTo(place2.getCategory().getName());
+
+
+        assertThat(places.get(2).name()).isEqualTo(place3.getName());
+        assertThat(places.get(2).id()).isEqualTo(place3.getId());
+        assertThat(places.get(2).category()).isEqualTo(place3.getCategory().getName());
+
+        verify(placeRepository).findAllByUser_Username(username);
+    }
+
+    @Test
+    public void findAllPrivate_shouldReturnAllPrivatePlaces() {
+        String username = "username";
+        User user = new User();
+        user.setUsername(username);
+
+        Category category = new Category();
+        category.setName("category");
+        category.setId(1L);
+
+        Place place1 = new Place();
+        place1.setCategory(category);
+        place1.setId(1L);
+        place1.setName("place1");
+        place1.setUser(user);
+
+        Place place2 = new Place();
+        place2.setId(2L);
+        place2.setPublic(false);
+        place2.setCategory(category);
+        place2.setName("place2");
+        place2.setUser(user);
+
+        Place place3 = new Place();
+        place3.setId(3L);
+        place3.setName("place3");
+        place3.setCategory(category);
+        place3.setUser(user);
+
+        when(placeRepository.findPrivatePlacesByUsername(username)).thenReturn(List.of(place1,place3));;
+
+        List<PlaceDTO> places = placeService.findAllPrivate(username);
+
+        assertThat(places).isNotNull();
+        assertThat(places.size()).isEqualTo(2);
+        assertThat(places.get(0).name()).isEqualTo(place1.getName());
+        assertThat(places.get(0).id()).isEqualTo(place1.getId());
+        assertThat(places.get(0).category()).isEqualTo(place1.getCategory().getName());
+
+        assertThat(places.get(1).name()).isEqualTo(place3.getName());
+        assertThat(places.get(1).id()).isEqualTo(place3.getId());
+        assertThat(places.get(1).category()).isEqualTo(place3.getCategory().getName());
+
+        verify(placeRepository).findPrivatePlacesByUsername(username);
+    }
+
+    @Test
+    public void findFriendPlaces_shouldReturnAllFriendPlaces() {
+        String username = "username";
+        String friendUsername = "friend";
+        User friend = new User();
+        friend.setUsername(friendUsername);
+
+        Category category = new Category();
+        category.setName("category");
+        category.setId(1L);
+
+        Place place1 = new Place();
+        place1.setCategory(category);
+        place1.setId(1L);
+        place1.setName("place1");
+        place1.setUser(friend);
+
+        Place place2 = new Place();
+        place2.setId(2L);
+        place2.setPublic(false);
+        place2.setCategory(category);
+        place2.setName("place2");
+        place2.setUser(friend);
+
+        Place place3 = new Place();
+        place3.setId(3L);
+        place3.setName("place3");
+        place3.setCategory(category);
+        place3.setUser(friend);
+
+        when(placeRepository.findPublicPlacesByUsername(friendUsername)).thenReturn(List.of(place1,place3));
+        when(friendService.isFriendWith(username,friendUsername)).thenReturn(true);
+
+        List<PlaceDTO> places = placeService.findFriendPlaces(username,friendUsername);
+
+        assertThat(places).isNotNull();
+        assertThat(places.size()).isEqualTo(2);
+        assertThat(places.get(0).name()).isEqualTo(place1.getName());
+        assertThat(places.get(0).id()).isEqualTo(place1.getId());
+        assertThat(places.get(0).category()).isEqualTo(place1.getCategory().getName());
+
+        assertThat(places.get(1).name()).isEqualTo(place3.getName());
+        assertThat(places.get(1).id()).isEqualTo(place3.getId());
+        assertThat(places.get(1).category()).isEqualTo(place3.getCategory().getName());
+
+        verify(placeRepository).findPublicPlacesByUsername(friendUsername);
+        verify(friendService).isFriendWith(username,friendUsername);
+    }
+
+    @Test
+    public void findFriendPlaces_shouldThrowFriendNotFoundException() {
+        String username = "username";
+        String friendUsername = "friend";
+
+        when(friendService.isFriendWith(username,friendUsername)).thenReturn(false);
+
+        assertThatThrownBy(() -> placeService.findFriendPlaces(username,friendUsername))
+                .isInstanceOf(FriendNotFoundException.class)
+                .hasMessageContaining("You have no friend named: " + friendUsername);
+
+    }
+
+    @Test
+    public void findNearestPlace_shouldReturnPlace() {
+        String username = "username";
+        User user = new User();
+        user.setUsername(username);
+
+        Category category = new Category();
+        category.setName("category");
+        category.setId(1L);
+
+        Place place1 = new Place();
+        place1.setCategory(category);
+        place1.setId(1L);
+        place1.setName("place1");
+        place1.setUser(user);
+        place1.setLatitude(0.1);
+        place1.setLongitude(0.1);
+
+        Place place2 = new Place();
+        place2.setId(2L);
+        place2.setPublic(false);
+        place2.setCategory(category);
+        place2.setName("place2");
+        place2.setUser(user);
+        place2.setLatitude(0.5);
+        place2.setLongitude(0.5);
+
+        Place place3 = new Place();
+        place3.setId(3L);
+        place3.setName("place3");
+        place3.setCategory(category);
+        place3.setUser(user);
+        place3.setLatitude(0.8);
+        place3.setLongitude(0.8);
+
+        when(placeRepository.findAllByUser_Username(username)).thenReturn(List.of(place1,place2,place3));
+
+        PlaceDTO placeDTO = placeService.findNearestPlace(username,0,0);
+        assertThat(placeDTO).isNotNull();
+        assertThat(placeDTO.id()).isEqualTo(place1.getId());
+        assertThat(placeDTO.category()).isEqualTo(place1.getCategory().getName());
+        assertThat(placeDTO.latitude()).isEqualTo(place1.getLatitude());
+        assertThat(placeDTO.longitude()).isEqualTo(place1.getLongitude());
+    }
+
+    @Test
+    public void findNearestPlace_shouldThrowPlaceNotFoundException() {
+        String username = "username";
+
+
+        when(placeRepository.findAllByUser_Username(username)).thenReturn(Collections.emptyList());
+
+        assertThatThrownBy(() -> placeService.findNearestPlace(username,0,0))
+                .isInstanceOf(PlaceNotFoundException.class)
+                .hasMessageContaining("User has no saved places");
+
+    }
+
+    @Test
+    public void findNearestPlaceByCategory_shouldReturnPlace() {
+        String username = "username";
+        User user = new User();
+        user.setUsername(username);
+
+
+        Category category = new Category();
+        category.setName("category");
+        category.setId(1L);
+
+        Place place1 = new Place();
+        place1.setCategory(category);
+        place1.setId(1L);
+        place1.setName("place1");
+        place1.setUser(user);
+        place1.setLatitude(0.8);
+        place1.setLongitude(0.8);
+
+        Place place2 = new Place();
+        place2.setId(2L);
+        place2.setPublic(false);
+        place2.setCategory(category);
+        place2.setName("place2");
+        place2.setUser(user);
+        place2.setLatitude(0.5);
+        place2.setLongitude(0.5);
+
+        when(placeRepository.findAllByCategoryAndUser_Username(category.getName(),username)).thenReturn(List.of(place1,place2));
+
+        PlaceDTO placeDTO = placeService.findNearestPlace(username,0,0,category.getName());
+        assertThat(placeDTO).isNotNull();
+        assertThat(placeDTO.id()).isEqualTo(place2.getId());
+        assertThat(placeDTO.category()).isEqualTo(place2.getCategory().getName());
+        assertThat(placeDTO.latitude()).isEqualTo(place2.getLatitude());
+        assertThat(placeDTO.longitude()).isEqualTo(place2.getLongitude());
+    }
+
+    @Test
+    public void findNearestPlaceByCategory_shouldThrowPlaceNotFoundException() {
+        String username = "username";
+        String categoryName = "category";
+
+
+        when(placeRepository.findAllByCategoryAndUser_Username(categoryName,username)).thenReturn(Collections.emptyList());
+
+        assertThatThrownBy(() -> placeService.findNearestPlace(username,0,0,categoryName))
+                .isInstanceOf(PlaceNotFoundException.class)
+                .hasMessageContaining("User has no saved places of category: " + categoryName);
 
     }
 }
