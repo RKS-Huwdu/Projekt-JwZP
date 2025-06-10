@@ -9,7 +9,7 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
-
+    restart: always
 
   app:
     image: myapp:latest
@@ -26,5 +26,6 @@ services:
       SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
     depends_on:
         - db
+    restart: on-failure
 volumes:
     db_data:
