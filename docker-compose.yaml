@@ -19,7 +19,8 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATABASE_URL: postgres://postgres://db:5432/mydatabase
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATABASE_URL: postgres://db:5432/mydatabase
       SPRING_POSTGRES_USERNAME: postgres
       SPRING_POSTGRES_PASSWORD: 123
       SPRING_DATABASE_DRIVER_CLASS_NAME: org.postgresql.Driver

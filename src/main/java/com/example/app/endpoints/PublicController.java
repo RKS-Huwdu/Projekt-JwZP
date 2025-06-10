@@ -2,17 +2,13 @@ package com.example.app.endpoints;
 
 import com.example.app.dtos.CreateUserDTO;
 import com.example.app.dtos.UserDTO;
-import com.example.app.security.CustomUserDetails;
 import com.example.app.services.InfoService;
 import com.example.app.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
-import org.springframework.boot.actuate.health.HealthComponent;
-import org.springframework.boot.actuate.health.HealthEndpoint;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

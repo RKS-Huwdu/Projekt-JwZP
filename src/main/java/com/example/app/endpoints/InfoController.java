@@ -4,8 +4,6 @@ import com.example.app.security.CustomUserDetails;
 import com.example.app.services.InfoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import org.springframework.boot.actuate.health.HealthComponent;
-import org.springframework.boot.actuate.health.HealthEndpoint;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,11 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class InfoController {
 
-    private final HealthEndpoint healthEndpoint;
     private final InfoService infoService;
 
-    public InfoController(HealthEndpoint healthEndpoint, InfoService infoService) {
-        this.healthEndpoint = healthEndpoint;
+    public InfoController(InfoService infoService) {
         this.infoService = infoService;
     }
 
@@ -47,8 +43,8 @@ public class InfoController {
     )
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/health")
-    public HealthComponent getHealth(@AuthenticationPrincipal CustomUserDetails user){
-        return healthEndpoint.health();
+    public String getHealth(@AuthenticationPrincipal CustomUserDetails user){
+        return "UP";
     }
 
     @PreAuthorize("hasRole('ADMIN')")

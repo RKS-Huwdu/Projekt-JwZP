@@ -1,5 +1,5 @@
 CREATE TABLE friends (
-                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                         id SERIAL PRIMARY KEY,
                          created_at TIMESTAMP,
                          receiver_id BIGINT,
                          requester_id BIGINT,
