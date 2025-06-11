@@ -2,7 +2,6 @@ package com.example.app.endpoints;
 
 import com.example.app.dtos.CreateUserDTO;
 import com.example.app.dtos.UserDTO;
-import com.example.app.services.InfoService;
 import com.example.app.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -15,11 +14,9 @@ import org.springframework.web.bind.annotation.*;
 public class PublicController {
 
     private final UserService userService;
-    private final InfoService infoService;
 
-    public PublicController(UserService userService, InfoService infoService) {
+    public PublicController(UserService userService) {
         this.userService = userService;
-        this.infoService = infoService;
     }
 
     @Operation(

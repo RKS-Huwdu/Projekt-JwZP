@@ -31,6 +31,17 @@ public class InfoController {
         return infoService.getAppInfo();
     }
 
+    @Operation(
+            summary = "Pobierz stan aplikacji",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Aplikacja działa poprawnie"),
+            }
+    )
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/health")
+    public String getHealth(@AuthenticationPrincipal CustomUserDetails user){
+        return "UP";
+    }
 
     @Operation(
             summary = "Pobierz logi systemowe z danego dnia",
@@ -41,12 +52,6 @@ public class InfoController {
                     @ApiResponse(responseCode = "500", description = "Wewnętrzny błąd serwera")
             }
     )
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/health")
-    public String getHealth(@AuthenticationPrincipal CustomUserDetails user){
-        return "UP";
-    }
-
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("logs/{date}")
     public String getLogByDate(@PathVariable String date) {
