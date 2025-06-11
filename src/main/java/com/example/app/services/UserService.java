@@ -115,9 +115,6 @@ public class UserService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
 
-        if (!passwordEncoder.matches(passwordDTO.password(), user.getPassword())) {
-            throw new InvalidPasswordException("Invalid current password");
-        }
 
         user.setPassword(passwordEncoder.encode(passwordDTO.password()));
         userRepository.save(user);
