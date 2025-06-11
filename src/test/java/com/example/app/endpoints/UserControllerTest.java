@@ -1,12 +1,14 @@
 package com.example.app.endpoints;
 
 
+import com.example.app.dtos.PasswordDTO;
 import com.example.app.dtos.UpdateUserDTO;
 import com.example.app.dtos.UserDTO;
 import com.example.app.entities.PremiumStatus;
 import com.example.app.entities.Role;
 import com.example.app.entities.RoleName;
 import com.example.app.entities.User;
+import com.example.app.exception.UserNotFoundException;
 import com.example.app.security.CustomUserDetails;
 import com.example.app.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +27,7 @@ import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -169,4 +172,181 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.email").value("updated@example.com"));
     }
 
+    @Test
+    void updateUser_shouldReturnNotFoundWhenUserDoesNotExist() throws Exception {
+        String validUserJson = "{ \"username\": \"updatedUser\", \"email\":  \"updated@example.com\"}";
+
+        User nonExistentUser = new User();
+        nonExistentUser.setUsername("nonExistentUser");
+        CustomUserDetails customUserNonExistent = new CustomUserDetails(nonExistentUser);
+
+        when(userService.updateCurrentUser(any(UpdateUserDTO.class), eq("nonExistentUser")))
+                .thenThrow(new UserNotFoundException("User not found: "+ nonExistentUser.getUsername()));
+
+        mockMvc.perform(put("/user/update")
+                        .with(user(customUserNonExistent))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(validUserJson))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteUser_shouldReturnNoContent() throws Exception {
+        mockMvc.perform(delete("/user/me")
+                        .with(user(customUserFree))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void updatePassword_shouldReturnOkOnSuccess() throws Exception {
+        String validPasswordJson = "{ \"password\": \"newPassword123\" }";
+
+        mockMvc.perform(patch("/user/password")
+                        .with(user(customUserFree))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(validPasswordJson))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Hasło zostało zmienione"));
+    }
+
+    @Test
+    void updatePassword_shouldReturnBadRequestForInvalidData() throws Exception {
+        String invalidPasswordJson = "{ \"password\": \"\" }";
+
+        mockMvc.perform(patch("/user/password")
+                        .with(user(customUserFree))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidPasswordJson))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getUserById_shouldReturnUserDTOAsAdmin() throws Exception {
+        when(userService.findById(freeUserId)).thenReturn(userFreeDTO);
+
+        User adminUser = new User();
+        adminUser.setId(3L);
+        adminUser.setUsername("adminUser");
+        adminUser.setRoles(Set.of(new Role(RoleName.ADMIN)));
+        CustomUserDetails customUserAdmin = new CustomUserDetails(adminUser);
+
+        mockMvc.perform(get("/user/{id}", freeUserId)
+                        .with(user(customUserAdmin))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(freeUserId))
+                .andExpect(jsonPath("$.username").value(freeUsername))
+                .andExpect(jsonPath("$.email").value(freeEmail))
+                .andExpect(jsonPath("$.roles[0]").value(RoleName.FREE_USER.name()))
+                .andExpect(jsonPath("$.places").isEmpty());
+    }
+
+    @Test
+    void deleteUserById_shouldReturnNoContentAsAdmin() throws Exception {
+        User adminUser = new User();
+        adminUser.setId(3L);
+        adminUser.setUsername("adminUser");
+        adminUser.setRoles(Set.of(new Role(RoleName.ADMIN)));
+        CustomUserDetails customUserAdmin = new CustomUserDetails(adminUser);
+
+        mockMvc.perform(delete("/user/{id}", freeUserId)
+                        .with(user(customUserAdmin))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void addRoleToUser_shouldReturnNoContentAsAdmin() throws Exception {
+        User adminUser = new User();
+        adminUser.setId(3L);
+        adminUser.setUsername("adminUser");
+        adminUser.setRoles(Set.of(new Role(RoleName.ADMIN)));
+        CustomUserDetails customUserAdmin = new CustomUserDetails(adminUser);
+
+        mockMvc.perform(patch("/user/{id}/role/{role}", freeUserId, RoleName.PREMIUM_USER)
+                        .with(user(customUserAdmin))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void addRoleToUser_shouldReturnNotFoundWhenUserDoesNotExist() throws Exception {
+        User adminUser = new User();
+        adminUser.setId(3L);
+        adminUser.setUsername("adminUser");
+        adminUser.setRoles(Set.of(new Role(RoleName.ADMIN)));
+        CustomUserDetails customUserAdmin = new CustomUserDetails(adminUser);
+
+        doThrow(new UserNotFoundException("User with ID " + freeUserId + " not found"))
+                .when(userService).addRoleToUser(eq(freeUserId), eq(RoleName.PREMIUM_USER));
+
+        mockMvc.perform(patch("/user/{id}/role/{role}", freeUserId, RoleName.PREMIUM_USER)
+                        .with(user(customUserAdmin))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteUserById_shouldReturnNotFoundWhenUserDoesNotExistAsAdmin() throws Exception {
+        when(userService.findById(freeUserId)).thenThrow(new UserNotFoundException("User with ID " + freeUserId + " not found"));
+        User adminUser = new User();
+        adminUser.setId(3L);
+        adminUser.setUsername("adminUser");
+        adminUser.setRoles(Set.of(new Role(RoleName.ADMIN)));
+        CustomUserDetails customUserAdmin = new CustomUserDetails(adminUser);
+
+        doThrow(new UserNotFoundException("User with ID " + freeUserId + " not found"))
+                .when(userService).deleteById(freeUserId);
+
+        mockMvc.perform(delete("/user/{id}", freeUserId)
+                        .with(user(customUserAdmin))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void addRoleToUser_shouldReturnBadRequestForInvalidRole() throws Exception {
+        User adminUser = new User();
+        adminUser.setId(3L);
+        adminUser.setUsername("adminUser");
+        adminUser.setRoles(Set.of(new Role(RoleName.ADMIN)));
+        CustomUserDetails customUserAdmin = new CustomUserDetails(adminUser);
+
+        mockMvc.perform(patch("/user/{id}/role/{role}", freeUserId, "INVALID_ROLE")
+                        .with(user(customUserAdmin))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void deleteRoleFromUser_shouldReturnNoContentAsAdmin() throws Exception {
+        User adminUser = new User();
+        adminUser.setId(3L);
+        adminUser.setUsername("adminUser");
+        adminUser.setRoles(Set.of(new Role(RoleName.ADMIN)));
+        CustomUserDetails customUserAdmin = new CustomUserDetails(adminUser);
+
+        mockMvc.perform(patch("/user/{id}/role/{role}", freeUserId, RoleName.FREE_USER)
+                        .with(user(customUserAdmin))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void deleteRoleFromUser_shouldReturnNotFoundWhenRoleNotPresent() throws Exception{
+        User adminUser = new User();
+        adminUser.setId(3L);
+        adminUser.setUsername("adminUser");
+        adminUser.setRoles(Set.of(new Role(RoleName.ADMIN)));
+        CustomUserDetails customUserAdmin = new CustomUserDetails(adminUser);
+
+        doThrow(new UserNotFoundException("User with ID " + freeUserId + " not found"))
+                .when(userService).deleteRoleFromUser(eq(freeUserId), eq(RoleName.PREMIUM_USER));
+
+        mockMvc.perform(delete("/user/{id}/role/{role}", freeUserId, RoleName.PREMIUM_USER)
+                        .with(user(customUserAdmin))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
 }
