@@ -15,11 +15,6 @@ metricbeat.modules:
     password: ${ELASTIC_PASSWORD}
     ssl.enabled: true
 
-  - module: logstash
-    xpack.enabled: true
-    period: 10s
-    hosts: ${LOGSTASH_HOSTS}
-
   - module: kibana
     metricsets:
       - stats
