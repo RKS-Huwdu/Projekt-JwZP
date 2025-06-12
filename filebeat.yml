@@ -1,0 +1,29 @@
+filebeat.inputs:
+  - type: log
+    enabled: true
+    paths:
+      - ./logs/*.log
+
+    multiline.pattern: '^\d{4}-\d{2}-\d{2}'
+    multiline.negate: true
+    multiline.match: after
+filebeat.autodiscover:
+  providers:
+    - type: docker
+      hints.enabled: true
+
+
+processors:
+  - add_docker_metadata: ~
+
+setup.kibana:
+  host: ${KIBANA_HOSTS}
+  username: ${ELASTIC_USER}
+  password: ${ELASTIC_PASSWORD}
+
+output.elasticsearch:
+  hosts: ${ELASTIC_HOSTS}
+  username: ${ELASTIC_USER}
+  password: ${ELASTIC_PASSWORD}
+  ssl.enabled: true
+  ssl.certificate_authorities: "certs/ca/ca.crt"
