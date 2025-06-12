@@ -6,10 +6,52 @@ services:
       POSTGRES_PASSWORD: 123
       POSTGRES_DB: mydatabase
     ports:
-      - "5432:5432"
+      - "5433:5433"
     volumes:
       - db_data:/var/lib/postgresql/data
     restart: always
+
+
+  Elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: elasticsearch
+    restart: always
+    volumes:
+      - es_data:/usr/share/elasticsearch/data/
+    environment:
+      #-ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+      discovery.type: single-node
+      xpack.security.enabled: false
+    ports:
+      - '9200:9200'
+    networks:
+      - elk
+
+  Logstash:
+    image: docker.elastic.co/logstash/logstash:8.13.4
+    container_name: logstash
+    restart: always
+    volumes:
+      - ./logstash/config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+      - ./logs:/usr/share/logstash/logs:ro
+    depends_on:
+      - Elasticsearch
+    ports:
+      - '9600:9600'
+    networks:
+      - elk
+  Kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.4
+    container_name: kibana
+    restart: always
+    ports:
+      - '5601:5601'
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    depends_on:
+      - Elasticsearch
+    networks:
+      - elk
 
   app:
     image: myapp:latest
@@ -26,7 +68,12 @@ services:
       SPRING_DATABASE_DRIVER_CLASS_NAME: org.postgresql.Driver
       SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
     depends_on:
-        - db
+      - db
     restart: on-failure
+
+
+networks:
+  elk:
 volumes:
-    db_data:
+  db_data:
+  es_data:
