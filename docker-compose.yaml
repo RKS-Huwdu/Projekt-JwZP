@@ -191,10 +191,10 @@ services:
       - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      SPRING_DATABASE_URL: postgres://db:5432/mydatabase
-      SPRING_POSTGRES_USERNAME: postgres
-      SPRING_POSTGRES_PASSWORD: 123
-      SPRING_DATABASE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/mydatabase
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 123
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
       SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
     depends_on:
       - db
